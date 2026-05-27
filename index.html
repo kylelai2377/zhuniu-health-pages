@@ -2,962 +2,1165 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>守护猪妞健康 — 项目汇报</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>守护猪妞健康</title>
 <style>
-  :root {
-    --bg: #f7f9fc;
-    --card: #ffffff;
-    --card2: #f8fdfb;
-    --text: #2d3436;
-    --dim: #636e72;
-    --primary: #10ac84;
-    --primary-light: #55efc4;
-    --primary-dark: #0a8a6a;
-    --accent: #ff6b6b;
-    --accent-light: #ffa8a8;
-    --accent2: #fdcb6e;
-    --border: #dfe6e9;
-    --tag-bg: #f0f4f3;
-  }
+:root {
+  --pink: #ff6b81;
+  --pink-light: #ffd5dc;
+  --pink-bg: #fff5f6;
+  --green: #20bf6b;
+  --green-light: #d4f5e3;
+  --orange: #fa8231;
+  --blue: #4a90d9;
+  --blue-light: #e8f2fb;
+  --purple: #8854d0;
+  --bg: #fafafa;
+  --card: #fff;
+  --text: #2d3436;
+  --dim: #888;
+  --border: #eee;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 80px;
+  user-select: none;
+}
 
-  * { margin:0; padding:0; box-sizing:border-box; }
+/* Header */
+.header {
+  background: linear-gradient(135deg, #ff6b81, #ff8e9e);
+  color: #fff;
+  padding: 16px 20px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 { font-size: 1.2em; font-weight: 700; }
+.header .date { font-size: 0.8em; opacity: 0.85; margin-top: 2px; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.7;
-  }
+/* Tab Pages */
+.tab-page { display: none; padding: 16px; }
+.tab-page.active { display: block; }
 
-  /* ===== Scroll Animation ===== */
-  .reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-  }
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .reveal-delay-1 { transition-delay: 0.1s; }
-  .reveal-delay-2 { transition-delay: 0.2s; }
-  .reveal-delay-3 { transition-delay: 0.3s; }
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 0;
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+}
+.bottom-nav .nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 0.65em;
+  transition: color 0.2s;
+  border: none;
+  background: none;
+}
+.bottom-nav .nav-item.active { color: var(--pink); }
+.bottom-nav .nav-item .nav-icon { font-size: 1.5em; }
 
-  /* Hero */
-  .hero {
-    text-align: center;
-    padding: 100px 20px 80px;
-    background: linear-gradient(160deg, #e6f8f2 0%, #f7f9fc 40%, #e8f6f3 70%);
-    border-bottom: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: -200px; left: 50%;
-    transform: translateX(-50%);
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(16,172,132,0.08) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero h1 {
-    font-size: 3.6em;
-    font-weight: 800;
-    background: linear-gradient(135deg, #10ac84, #55efc4, #ff6b6b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 16px;
-    position: relative;
-  }
-  .hero .subtitle {
-    font-size: 1.35em;
-    color: #3d5a4e;
-    font-style: italic;
-    margin-bottom: 12px;
-    position: relative;
-  }
-  .hero .tagline {
-    font-size: 1em;
-    color: var(--dim);
-    position: relative;
-  }
-  .hero .badges {
-    margin-top: 28px;
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    position: relative;
-  }
-  .hero .badge {
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 0.82em;
-    font-weight: 600;
-    border: 1px solid var(--border);
-    background: var(--tag-bg);
-    color: #555;
-  }
-  .badge.python    { color: #c9880a; border-color: #f0d060; }
-  .badge.ai        { color: #10ac84; border-color: #55efc4; }
-  .badge.health    { color: #ff6b6b; border-color: #ffa8a8; }
-  .badge.mit       { color: #6c5ce7; border-color: #c4b5fd; }
+/* Cards */
+.card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.card h3 { font-size: 1em; margin-bottom: 10px; color: #333; }
 
-  /* Layout */
-  .container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
-  section {
-    padding: 60px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  section:last-of-type { border-bottom: none; }
+/* Ring Chart */
+.ring-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px 0;
+}
+.ring-container { position: relative; width: 130px; height: 130px; flex-shrink: 0; }
+.ring-container svg { transform: rotate(-90deg); }
+.ring-container .center-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.ring-container .center-text .val { font-size: 1.8em; font-weight: 800; color: var(--pink); }
+.ring-container .center-text .lbl { font-size: 0.7em; color: var(--dim); }
+.ring-stats { font-size: 0.85em; line-height: 1.9; }
+.ring-stats span { font-weight: 600; }
 
-  h2 {
-    font-size: 2em;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #1a2e24;
-  }
-  h2 .num {
-    display: inline-block;
-    background: var(--primary);
-    color: #fff;
-    font-size: 0.55em;
-    width: 32px; height: 32px;
-    line-height: 32px;
-    text-align: center;
-    border-radius: 8px;
-    margin-right: 12px;
-    vertical-align: middle;
-  }
-  .section-desc {
-    color: var(--dim);
-    margin-bottom: 32px;
-    font-size: 1.05em;
-  }
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-pink { background: var(--pink); color: #fff; }
+.btn-outline { background: #fff; color: var(--pink); border: 1.5px solid var(--pink); }
+.btn-sm { padding: 6px 14px; font-size: 0.8em; border-radius: 14px; }
+.btn-block { display: block; width: 100%; text-align: center; }
 
-  /* Cards */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px 32px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  }
-  .card h3 { font-size: 1.25em; margin-bottom: 12px; color: #1a2e24; }
-  .card p, .card li { color: #3a4a42; }
-  .card li { margin-bottom: 6px; }
+/* Search */
+.search-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.search-box input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 22px;
+  font-size: 0.9em;
+  outline: none;
+  background: #f9f9f9;
+}
+.search-box input:focus { border-color: var(--pink); }
 
-  .card-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  .card-grid3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-  }
+/* Category Chips */
+.cat-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+.cat-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 0.8em;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cat-chip.active { background: var(--pink); color: #fff; border-color: var(--pink); }
 
-  /* Steps */
-  .steps { list-style: none; }
-  .steps li {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 28px;
-    align-items: flex-start;
-  }
-  .steps .step-num {
-    flex-shrink: 0;
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: var(--primary);
-    color: #fff;
-    font-weight: 700;
-    font-size: 1.1em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .steps .step-content h4 { font-size: 1.1em; margin-bottom: 6px; color: #1a2e24; }
-  .steps .step-content p  { color: #3a4a42; font-size: 0.95em; line-height: 1.75; }
+/* Food List */
+.food-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+}
+.food-item:active { background: #fef0f2; }
+.food-item .food-name { font-weight: 500; font-size: 0.9em; }
+.food-item .food-cal { color: var(--pink); font-weight: 600; font-size: 0.85em; }
+.food-item .food-macro { color: #aaa; font-size: 0.7em; }
 
-  /* Architecture */
-  .arch {
-    background: var(--card2);
-    border-radius: 14px;
-    padding: 32px;
-    text-align: center;
-    border: 1px solid var(--border);
-    margin-bottom: 20px;
-  }
-  .arch-flow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin: 24px 0;
-  }
-  .arch-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 28px;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-  }
-  .arch-box.label-a { border-color: var(--accent); border-left: 4px solid var(--accent); }
-  .arch-box.label-b { border-color: var(--primary); border-left: 4px solid var(--primary); }
-  .arch-box.label-c { border-color: var(--accent2); border-left: 4px solid var(--accent2); }
-  .arch-box h4 { font-size: 1em; margin-bottom: 4px; color: #1a2e24; }
-  .arch-box p  { font-size: 0.82em; color: var(--dim); }
-  .arch-arrow { font-size: 1.6em; color: #aaa; }
+/* Meal Sections */
+.meal-section { margin-bottom: 16px; }
+.meal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 4px 0;
+}
+.meal-header h4 { font-size: 0.95em; }
+.meal-header .meal-kcal { font-size: 0.8em; color: var(--dim); }
+.meal-items { font-size: 0.85em; }
+.meal-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #fafafa;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+.meal-item-row .del-btn {
+  color: #ccc;
+  cursor: pointer;
+  font-size: 1.1em;
+  padding: 0 4px;
+}
+.meal-item-row .del-btn:active { color: var(--pink); }
 
-  /* Tags */
-  .tag-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
-  }
-  .tag {
-    padding: 4px 14px;
-    border-radius: 16px;
-    font-size: 0.85em;
-    background: var(--tag-bg);
-    border: 1px solid var(--border);
-    color: #4a5a52;
-  }
-  .tag.highlight { background: #10ac8412; border-color: #10ac8440; color: #10ac84; }
+/* Chat */
+.chat-area {
+  height: 380px;
+  overflow-y: auto;
+  background: #fafafa;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chat-bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 0.9em;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.chat-bubble.user {
+  align-self: flex-end;
+  background: var(--pink);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.chat-bubble.bot {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid #eee;
+  border-bottom-left-radius: 4px;
+}
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+}
+.chat-input-row input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 22px;
+  font-size: 0.9em;
+  outline: none;
+}
+.chat-input-row button {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--pink);
+  color: #fff;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.quick-asks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.quick-ask {
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  font-size: 0.78em;
+  cursor: pointer;
+  color: #666;
+}
+.quick-ask:active { background: var(--pink-light); border-color: var(--pink); }
 
-  /* Chat Demo */
-  .chat-demo {
-    background: #f8fdfb;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .chat-msg {
-    padding: 16px 20px;
-    display: flex;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .chat-msg:last-child { border-bottom: none; }
-  .chat-msg.user { background: #f8faf9; }
-  .chat-msg.bot  { background: #f0f8f5; }
-  .chat-role {
-    flex-shrink: 0;
-    font-weight: 700;
-    font-size: 0.9em;
-    min-width: 80px;
-  }
-  .chat-role.user-label { color: #636e72; }
-  .chat-role.bot-label  { color: #10ac84; }
-  .chat-text { color: #3a4a42; font-size: 0.95em; white-space: pre-wrap; }
+/* Exercise */
+.exercise-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.exercise-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  border: none;
+  color: #888;
+}
+.exercise-tab.active { background: var(--pink); color: #fff; }
+.day-plan {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-left: 3px solid var(--pink);
+}
+.day-plan h4 { font-size: 0.9em; margin-bottom: 4px; }
+.day-plan p { font-size: 0.82em; color: #666; line-height: 1.6; }
 
-  /* Code Block */
-  .code-block {
-    background: #f0f4f3;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px 24px;
-    font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
-    font-size: 0.85em;
-    color: #3a4a42;
-    overflow-x: auto;
-    line-height: 1.6;
-  }
-  .code-block .cmd { color: #10ac84; }
-  .code-block .path { color: #c9880a; }
-  .code-block .comment { color: #aaa; }
+/* Profile */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 0.85em; font-weight: 600; color: #555; margin-bottom: 4px; }
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9em;
+  outline: none;
+  background: #f9f9f9;
+}
+.form-group input:focus { border-color: var(--pink); }
+.form-row { display: flex; gap: 10px; }
+.form-row .form-group { flex: 1; }
+.result-box {
+  text-align: center;
+  padding: 16px;
+  background: linear-gradient(135deg, #fff5f6, #fff);
+  border-radius: 12px;
+  border: 1px solid var(--pink-light);
+  margin-top: 10px;
+}
+.result-box .big-num { font-size: 2em; font-weight: 800; color: var(--pink); }
+.result-box .desc { font-size: 0.8em; color: var(--dim); margin-top: 4px; }
 
-  /* Table */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 16px 0;
-    font-size: 0.93em;
-  }
-  th, td {
-    padding: 12px 16px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-  th {
-    color: var(--dim);
-    font-weight: 600;
-    font-size: 0.85em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  td { color: #3a4a42; }
-  tr:hover td { background: #f8fdfb; }
+/* Toast */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 20px;
+  font-size: 0.85em;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
 
-  /* Scenario Cards */
-  .scenario {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 24px 28px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-  }
-  .scenario .icon { font-size: 1.6em; margin-bottom: 8px; }
-  .scenario h4 { color: #1a2e24; margin-bottom: 6px; }
-  .scenario p  { color: #4a5a52; font-size: 0.93em; }
-  .scenario .insight {
-    margin-top: 12px;
-    padding: 12px 16px;
-    background: #f0f8f5;
-    border-left: 3px solid var(--primary);
-    border-radius: 0 8px 8px 0;
-    font-size: 0.9em;
-    color: var(--dim);
-  }
-
-  /* Data Source Cards */
-  .datasource-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 24px 28px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-  }
-  .datasource-card .ds-icon {
-    flex-shrink: 0;
-    width: 44px; height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3em;
-  }
-  .ds-icon.star3 { background: #10ac8412; }
-  .ds-icon.star2 { background: #ffa8a812; }
-  .ds-icon.star1 { background: #fdcb6e12; }
-  .datasource-card .ds-body h4 { font-size: 1.05em; color: #1a2e24; margin-bottom: 4px; }
-  .datasource-card .ds-body .ds-meta { font-size: 0.85em; color: var(--dim); margin-bottom: 6px; }
-  .datasource-card .ds-body p { font-size: 0.93em; color: #4a5a52; }
-
-  /* Icon Grid */
-  .icon-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  .icon-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-  }
-  .icon-card .ic-icon {
-    flex-shrink: 0;
-    font-size: 1.8em;
-  }
-  .icon-card h4 { font-size: 1em; color: #1a2e24; margin-bottom: 4px; }
-  .icon-card p  { font-size: 0.88em; color: #4a5a52; }
-
-  /* Footer */
-  footer {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--dim);
-    font-size: 0.88em;
-  }
-  footer a { color: var(--primary); text-decoration: none; }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .hero h1 { font-size: 2.4em; }
-    .card-grid, .card-grid3, .icon-grid { grid-template-columns: 1fr; }
-    .arch-flow { flex-direction: column; }
-    .datasource-card { flex-direction: column; }
-  }
+/* Portion Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-sheet {
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  width: 100%;
+  max-width: 480px;
+  padding: 24px 20px 40px;
+  animation: slideUp 0.25s ease-out;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-sheet h3 { text-align: center; margin-bottom: 6px; }
+.modal-sheet .cal-info { text-align: center; color: var(--dim); font-size: 0.8em; margin-bottom: 16px; }
+.portion-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.portion-btn {
+  padding: 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  background: #fff;
+  font-size: 0.9em;
+}
+.portion-btn:active { border-color: var(--pink); background: #fff5f6; }
+.portion-btn .grams { font-size: 0.75em; color: #aaa; }
+.custom-portion {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.custom-portion input {
+  flex: 1;
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9em;
+  text-align: center;
+}
+.meal-picker {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.meal-picker button {
+  flex: 1;
+  padding: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.82em;
+  cursor: pointer;
+}
+.meal-picker button.active { border-color: var(--pink); background: #fff5f6; color: var(--pink); }
 </style>
 </head>
 <body>
 
-<!-- ============ HERO ============ -->
-<header class="hero">
-  <h1>守护猪妞健康</h1>
-  <p class="subtitle">"守护她的健康，就是守护这个家"</p>
-  <p class="tagline">一个专为猪妞打造的 AI 健康守护系统 —— 从日常监测到疾病预警，360 度守护她的每一天</p>
-  <div class="badges">
-    <span class="badge python">Python 3.10+</span>
-    <span class="badge ai">Claude API + RAG</span>
-    <span class="badge health">健康医疗</span>
-    <span class="badge mit">MIT License</span>
-  </div>
-</header>
-
-<div class="container">
-
-<!-- ============ 1. BACKGROUND ============ -->
-<section class="reveal">
-  <h2><span class="num">1</span> 项目背景</h2>
-  <p class="section-desc">健康管理这件事，为什么大多数人都在"假装努力"？</p>
-
-  <div class="card reveal">
-    <h3>当代人的健康困境</h3>
-    <div class="icon-grid" style="margin-top:16px">
-      <div class="icon-card">
-        <span class="ic-icon">📱</span>
-        <div>
-          <h4>信息过载，真假难辨</h4>
-          <p>小红书说喝芹菜汁排毒，抖音说空腹喝咖啡伤胃，微信养生号说每天必须喝八杯水——到底该听谁的？搜索引擎给出的答案常常互相矛盾。</p>
-        </div>
-      </div>
-      <div class="icon-card">
-        <span class="ic-icon">📋</span>
-        <div>
-          <h4>体检报告看不懂</h4>
-          <p>拿到体检报告，密密麻麻的箭头和数字，除了"建议复查"四个字，完全不知道问题严重不严重、该怎么调整。</p>
-        </div>
-      </div>
-      <div class="icon-card">
-        <span class="ic-icon">🍽️</span>
-        <div>
-          <h4>饮食方案千篇一律</h4>
-          <p>网上的减脂食谱、控糖餐单都是给"平均人"设计的——不考虑你的口味偏好、过敏原、生活方式，坚持三天就放弃。</p>
-        </div>
-      </div>
-      <div class="icon-card">
-        <span class="ic-icon">🏃</span>
-        <div>
-          <h4>运动计划难以坚持</h4>
-          <p>办了健身卡只去了三次，Keep 下载了从没打开。不是意志力不行，而是那些计划不是为你量身定做的。</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card reveal">
-    <h3>为什么是现在？</h3>
-    <p>
-      大语言模型（LLM）的推理能力和多模态理解能力在过去两年取得了质的飞跃。
-      结合检索增强生成（RAG）技术，AI 可以基于权威医学知识库进行推理，同时理解你的个人健康数据，<strong>提供真正个性化的健康建议</strong>。
-      守护猪妞健康 正是在这个技术节点上的一次实践：不再依赖碎片化的养生信息，而是用 AI 为猪妞构建一个<strong>专属的、持续运转的健康守护系统</strong>。
-    </p>
-  </div>
-</section>
-
-<!-- ============ 2. INTRODUCTION ============ -->
-<section>
-  <h2><span class="num">2</span> 项目介绍</h2>
-  <p class="section-desc">五大核心模块，构建你的专属 AI 健康顾问</p>
-
-  <div class="card-grid3 reveal">
-    <div class="card">
-      <h3 style="color:#10ac84">🔍 智能症状分析</h3>
-      <p>用户用自然语言描述不适，AI 结合医学知识库进行多轮对话问询，给出症状的<strong>可能原因、严重程度评估、就医建议</strong>和<strong>自我调理方案</strong>。</p>
-    </div>
-    <div class="card">
-      <h3 style="color:#ff6b6b">🍽️ 个性化饮食方案</h3>
-      <p>基于身体状况、口味偏好、过敏原、宗教信仰等维度，生成<strong>每周定制餐单</strong>。不只是"少油少盐"，而是精确到每餐吃什么、怎么做。</p>
-    </div>
-    <div class="card">
-      <h3 style="color:#fdcb6e">🏃 运动处方定制</h3>
-      <p>输入体能水平、运动目标、可用时间、场地限制，AI 生成<strong>科学分阶的运动计划</strong>——从入门到进阶，每阶段都有明确指标。</p>
-    </div>
-  </div>
-
-  <div class="card-grid reveal" style="margin-top:0">
-    <div class="card">
-      <h3 style="color:#6c5ce7">📊 健康报告解读</h3>
-      <p>上传体检报告（PDF/图片），AI 提取关键指标、解释每项含义、标注异常项、给出<strong>分级行动建议</strong>——哪些需要立即就医，哪些调整生活方式就行。</p>
-    </div>
-    <div class="card">
-      <h3 style="color:#00b894">📈 生活习惯追踪</h3>
-      <p>记录每日睡眠、饮水、饮食、运动、情绪等维度的数据，AI 定期生成<strong>健康趋势报告</strong>，发现你的隐藏模式——比如"每次熬夜后第二天都会喝两杯咖啡"。</p>
-    </div>
-  </div>
-
-  <div class="arch reveal" style="margin-top:20px">
-    <h3>系统运作逻辑</h3>
-    <div class="arch-flow">
-      <div class="arch-box"><h4>用户输入</h4><p>症状描述 / 体检报告<br>饮食偏好 / 运动目标</p></div>
-      <span class="arch-arrow">→</span>
-      <div class="arch-box label-b"><h4>RAG 医学知识库</h4><p>权威医学文献<br>临床指南 · 药物数据库</p></div>
-      <span class="arch-arrow">→</span>
-      <div class="arch-box label-a"><h4>LLM 推理引擎</h4><p>症状关联分析<br>个性化方案生成</p></div>
-      <span class="arch-arrow">→</span>
-      <div class="arch-box label-c"><h4>输出</h4><p>健康评估 + 饮食方案<br>运动处方 + 趋势报告</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 3. OPERATION GUIDE ============ -->
-<section>
-  <h2><span class="num">3</span> 操作指南</h2>
-  <p class="section-desc">从注册到获得个性化健康方案，只需 5 步</p>
-
-  <ol class="steps">
-    <li class="reveal">
-      <span class="step-num">1</span>
-      <div class="step-content">
-        <h4>创建健康档案（5 分钟）</h4>
-        <p>
-          填写基本信息：年龄、性别、身高、体重、既往病史、过敏原、服药情况。<br>
-          系统支持<strong>语音输入</strong>——不想打字？直接说就行。<br>
-          隐私保护：所有健康数据<strong>端到端加密</strong>存储，用户可随时导出或删除。
-        </p>
-      </div>
-    </li>
-    <li class="reveal">
-      <span class="step-num">2</span>
-      <div class="step-content">
-        <h4>设定健康目标</h4>
-        <p>
-          选择你的目标类型：<br>
-          <strong>减重塑形</strong>（目标体重、时间线）&nbsp;|&nbsp;
-          <strong>慢病管理</strong>（控糖、降压、降脂）&nbsp;|&nbsp;
-          <strong>体能提升</strong>（5K 跑步、增肌、柔韧性）&nbsp;|&nbsp;
-          <strong>综合调理</strong>（改善睡眠、减压、增强免疫）<br>
-          可以同时设定多个目标，AI 会自动协调方案之间的平衡。
-        </p>
-      </div>
-    </li>
-    <li class="reveal">
-      <span class="step-num">3</span>
-      <div class="step-content">
-        <h4>上传体检报告（可选但推荐）</h4>
-        <p>
-          支持<strong>PDF、JPG、PNG</strong> 格式，系统自动 OCR 识别关键指标（血常规、生化、尿常规等）。<br>
-          识别结果与医学标准值范围对比，异常项红色高亮，每项附带<strong>通俗解释</strong>和<strong>分级建议</strong>：<br>
-          🔴 红色警报 → 建议尽快就医&nbsp;&nbsp;|&nbsp;&nbsp;🟡 黄色预警 → 调整生活方式&nbsp;&nbsp;|&nbsp;&nbsp;🟢 绿色正常 → 继续保持
-        </p>
-      </div>
-    </li>
-    <li class="reveal">
-      <span class="step-num">4</span>
-      <div class="step-content">
-        <h4>AI 生成个性化方案</h4>
-        <p>
-          系统综合你的<strong>健康档案 + 体检数据 + 个人偏好 + 目标设定</strong>，调用 RAG 医学知识库进行推理，生成：<br>
-          · 每周定制餐单（含食材清单、烹饪步骤、热量和营养素标注）<br>
-          · 运动处方（分阶段安排，含动作视频链接和注意事项）<br>
-          · 生活习惯改善建议（睡眠卫生、压力管理等）<br>
-          所有方案均附带<strong>医学依据引用</strong>，让你清楚知道"为什么这样建议"。
-        </p>
-      </div>
-    </li>
-    <li class="reveal">
-      <span class="step-num">5</span>
-      <div class="step-content">
-        <h4>每日追踪 + 动态调整</h4>
-        <p>
-          每天花 <strong>2 分钟</strong>记录关键数据（体重、饮食、运动、睡眠、情绪），AI 每周生成趋势报告。<br>
-          偏离目标时自动预警——"你本周蔬菜摄入量下降了 30%，要不要试试这几道快手菜？"<br>
-          支持<strong>随时对话调整</strong>：不想吃今天的食谱 → "帮我把晚餐换成一个不用开火的方案，15 分钟内能搞定"。
-        </p>
-      </div>
-    </li>
-  </ol>
-</section>
-
-<!-- ============ 4. DATA SOURCES ============ -->
-<section>
-  <h2><span class="num">4</span> 需要的用户数据</h2>
-  <p class="section-desc">数据越完整，方案越精准 —— 但即使只有基本信息，也能开始使用</p>
-
-  <div class="datasource-card reveal">
-    <div class="ds-icon star3">🧬</div>
-    <div class="ds-body">
-      <h4>基础健康信息</h4>
-      <p class="ds-meta">必填 &nbsp;|&nbsp; 隐私等级：高</p>
-      <p>年龄、性别、身高、体重、既往病史、过敏药物/食物、家族病史。这些是生成任何健康方案的基础坐标系。系统采用字段级加密，不同信息可设置不同隐私级别。</p>
-    </div>
-  </div>
-
-  <div class="datasource-card reveal">
-    <div class="ds-icon star3">📄</div>
-    <div class="ds-body">
-      <h4>体检报告</h4>
-      <p class="ds-meta">强烈推荐 &nbsp;|&nbsp; 格式：PDF / JPG / PNG</p>
-      <p>体检报告是了解身体状态的"金标准"。OCR 自动提取血常规、生化全项、尿常规、甲功、肿瘤标志物等关键指标，与临床标准值对比，生成分级预警。上传越多历史报告，趋势分析越准。</p>
-    </div>
-  </div>
-
-  <div class="datasource-card reveal">
-    <div class="ds-icon star3">📝</div>
-    <div class="ds-body">
-      <h4>生活习惯问卷</h4>
-      <p class="ds-meta">推荐 &nbsp;|&nbsp; 约 15 分钟</p>
-      <p>一份精心设计的问卷覆盖：作息规律、饮食偏好（含 50+ 种常见食物偏好打分）、运动习惯、饮酒/吸烟情况、压力水平、睡眠质量、排便习惯等。每个维度只需回答 3-5 道选择题。</p>
-    </div>
-  </div>
-
-  <div class="datasource-card reveal">
-    <div class="ds-icon star2">🍎</div>
-    <div class="ds-body">
-      <h4>饮食照片记录</h4>
-      <p class="ds-meta">可选 &nbsp;|&nbsp; 拍照上传</p>
-      <p>拍一张照片，AI 识别食物种类并估算分量和营养素。相比手动录入，拍照记录的用户坚持率高出 3 倍。支持连续记录——AI 能从你的每一餐中学习你的真实饮食习惯。</p>
-    </div>
-  </div>
-
-  <div class="datasource-card reveal">
-    <div class="ds-icon star1">⌚</div>
-    <div class="ds-body">
-      <h4>可穿戴设备数据</h4>
-      <p class="ds-meta">可选 &nbsp;|&nbsp; 支持 Apple Health / Google Fit / 小米 / 华为</p>
-      <p>同步智能手表/手环的步数、心率、睡眠、血氧、运动记录，免去手动输入。原始数据经 AI 分析后提炼为有意义的洞察——不是告诉你"昨天走了 8000 步"，而是告诉你"你工作日步数偏低，建议午饭后散步 10 分钟"。</p>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 5. 核心功能深化 ============ -->
-<section>
-  <h2><span class="num">5</span> 核心功能深解</h2>
-  <p class="section-desc">每个模块背后的技术逻辑和用户体验设计</p>
-
-  <div class="card-grid reveal">
-    <div class="card">
-      <h3 style="color:#10ac84">症状分析引擎</h3>
-      <p style="margin-bottom:12px">不只是"头痛可能是感冒"这种泛泛之谈：</p>
-      <ul>
-        <li><strong>多轮对话问诊</strong> —— 模拟医生问诊逻辑，逐步缩小可能性范围</li>
-        <li><strong>鉴别诊断</strong> —— 列出可能的诊断及其概率，标注危险信号</li>
-        <li><strong>分级建议</strong> —— "建议 24 小时内就医" vs "在家观察 3 天，若无好转再就医"</li>
-        <li><strong>就医准备</strong> —— 告诉你去医院要挂什么科、带什么材料、问医生什么问题</li>
-      </ul>
-    </div>
-    <div class="card">
-      <h3 style="color:#ff6b6b">饮食方案生成器</h3>
-      <p style="margin-bottom:12px">在"营养科学"和"你愿意吃"之间找到交集：</p>
-      <ul>
-        <li><strong>口味建模</strong> —— 从你喜欢的 50+ 种食物中学习口味偏好向量</li>
-        <li><strong>约束求解</strong> —— 在热量目标、营养素比例、过敏原、口味偏好之间找最优解</li>
-        <li><strong>多样化策略</strong> —— 避免"连续三天都吃鸡胸肉西兰花"</li>
-        <li><strong>懒人模式</strong> —— 一键切换"不开火""15 分钟""外卖友好"等场景</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card-grid3 reveal" style="margin-top:0">
-    <div class="card">
-      <h3 style="color:#fdcb6e">运动处方</h3>
-      <p>FITT-VP 原则（频率、强度、时间、类型、总量、进阶），每个参数都根据你的体能基线测定结果设定。不是"每天跑 5 公里"这种一刀切。</p>
-    </div>
-    <div class="card">
-      <h3 style="color:#6c5ce7">报告解读</h3>
-      <p>对比 3 年内所有体检报告的同一指标变化趋势，发现"虽然还在正常范围但逐年上升"的早期预警信号。</p>
-    </div>
-    <div class="card">
-      <h3 style="color:#00b894">趋势洞察</h3>
-      <p>从日常记录中发现隐藏关联：熬夜 → 次日高热量饮食 → 内疚 → 报复性运动 → 受伤 → 暂停运动 → 体重回升。AI 帮你打破这个循环。</p>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 6. SCENARIO DEMOS ============ -->
-<section>
-  <h2><span class="num">6</span> 应用场景演示</h2>
-  <p class="section-desc">三个典型用户场景，展示守护猪妞健康 的实际交互体验</p>
-
-  <div class="scenario reveal">
-    <div class="icon">🗣️</div>
-    <h4>场景一：身体不舒服，不确定要不要去医院</h4>
-    <div class="chat-demo" style="margin-top:12px">
-      <div class="chat-msg user">
-        <span class="chat-role user-label">用户</span>
-        <span class="chat-text">最近几天总觉得头晕，有时候站起来眼前发黑，今天早上差点摔倒。我是不是贫血了？</span>
-      </div>
-      <div class="chat-msg bot">
-        <span class="chat-role bot-label">猪妞守护</span>
-        <span class="chat-text">站起来时眼前发黑（体位性低血压）加上差点摔倒，这个情况需要重视。我先确认几个关键信息：
-
-1. 你最近有在节食或减肥吗？每天的饮食大概是什么样的？
-2. 有没有其他症状——心慌、耳鸣、面色苍白、月经量增多（如果是女性）？
-3. 你有测过血压和血糖吗？
-
-在了解这些之前，我先提醒你：<strong>今天先不要自己开车或骑车</strong>，避免突然晕倒。如果你现在感觉非常不适，建议直接去急诊。</span>
-      </div>
-      <div class="chat-msg user">
-        <span class="chat-role user-label">用户</span>
-        <span class="chat-text">没有节食但是最近加班多睡得少。心慌偶尔有，血压没测过。会是低血糖吗？</span>
-      </div>
-      <div class="chat-msg bot">
-        <span class="chat-role bot-label">猪妞守护</span>
-        <span class="chat-text">根据你说的情况，有几种可能性：
-
-<strong>可能性排序：</strong>
-1. 🟡 <strong>体位性低血压</strong>（可能性较高）—— 长期睡眠不足 + 可能的饮水不足导致血容量偏低
-2. 🟡 <strong>贫血</strong>（需要确认）—— 需要查血常规才能排除
-3. 🟡 <strong>低血糖</strong>（可能性较低）—— 低血糖通常还包括出冷汗、手抖，你没有提到
-
-<strong>我的建议：</strong>
-· 明天去社区医院查一个 <strong>血常规 + 空腹血糖 + 血压测量</strong>，这三项加起来大概 50 块钱
-· 在没有明确诊断前，<strong>起床和站起时放慢动作</strong>，先在床边坐 30 秒再站起来
-· 这几天保证每天喝足 1500ml 水，尽量保证 7 小时睡眠
-
-你可以把检查结果拍照发给我，我帮你解读。如果有任何加重的感觉，不要等，直接去医院。</span>
-      </div>
-    </div>
-    <div class="insight">
-      <strong>背后的技术：</strong>AI 没有直接跳到"贫血"的结论，而是通过多轮对话收集更多信息，进行鉴别诊断。分级建议明确了"社区医院查三项"而非"去三甲挂专家号"——避免不必要的医疗资源消耗。每条建议背后都有 RAG 检索到的临床指南作为依据。
-    </div>
-  </div>
-
-  <div class="scenario reveal">
-    <div class="icon">🍽️</div>
-    <h4>场景二：想吃好又想控糖，每天纠结吃什么</h4>
-    <div class="chat-demo" style="margin-top:12px">
-      <div class="chat-msg user">
-        <span class="chat-role user-label">用户</span>
-        <span class="chat-text">帮我安排下周的晚餐，我血糖偏高，不吃辣，讨厌香菜和芹菜，周一和周三晚上只有 20 分钟做饭时间。</span>
-      </div>
-      <div class="chat-msg bot">
-        <span class="chat-role bot-label">猪妞守护</span>
-        <span class="chat-text">好的，基于你的情况我已经生成了下周晚餐计划：
-
-<strong>周一（20分钟快速）🥒</strong>
-蒜蓉西蓝花 + 香煎鸡胸肉 + 杂粮饭
-→ 准备：西兰花提前洗净切好，鸡胸肉提前解冻
-→ 热量：420kcal | 碳水：45g | 蛋白质：35g
-→ 低 GI 组合，餐后血糖波动小
-
-<strong>周二（正常时间）🐟</strong>
-清蒸鲈鱼 + 凉拌木耳黄瓜 + 藜麦饭
-→ 清蒸做法几乎零油烟，鱼肉蛋白吸收率高达 96%
-→ 木耳膳食纤维丰富，有助于延缓糖分吸收
-
-<strong>周三（20分钟快速）🥬</strong>
-番茄豆腐汤 + 白灼虾 + 全麦馒头
-→ 番茄买罐装切块备好，虾仁提前解冻，15分钟就能上桌
-→ 热量：380kcal | 高蛋白、低碳水
-
-<strong>…（周四到周日已折叠，点击展开）</strong>
-
-需要我把食材清单按超市分区整理出来吗？</span>
-      </div>
-    </div>
-    <div class="insight">
-      <strong>背后的技术：</strong>方案不是简单的"低 GI 食物列表"，而是在热量、碳水、蛋白质、时间约束、口味禁忌五个维度之间求解。注意到周一和周三是"快速方案"——系统自动选择了预处理简单、烹饪时间短的食材组合。每道菜标注了热量和营养素，方便用户了解"为什么是这道菜"。
-    </div>
-  </div>
-
-  <div class="scenario reveal">
-    <div class="icon">📊</div>
-    <h4>场景三：体检报告一堆箭头，不知道从哪开始</h4>
-    <div class="chat-demo" style="margin-top:12px">
-      <div class="chat-msg user">
-        <span class="chat-role user-label">用户</span>
-        <span class="chat-text">[上传体检报告 PDF] 帮我看看有什么问题</span>
-      </div>
-      <div class="chat-msg bot">
-        <span class="chat-role bot-label">猪妞守护</span>
-        <span class="chat-text">已解析你的体检报告（2026年5月）。以下是摘要：
-
-<strong>🟢 正常指标（18项）：</strong>肝肾功能、电解质、甲功三项均在正常范围。
-
-<strong>🟡 需要关注（3项）：</strong>
-· <strong>空腹血糖：6.3 mmol/L</strong> ↑（正常 3.9-6.1）—— 处于糖尿病前期，好消息是：这个阶段通过生活方式干预，有较大概率逆转
-· <strong>低密度脂蛋白 LDL：3.8 mmol/L</strong> ↑（理想 < 2.6）—— 偏高，但还没有到用药标准
-· <strong>25-羟维生素D：18 ng/mL</strong> ↓（充足 > 30）—— 偏低，可能与你户外活动少有关
-
-<strong>🔴 需要就医（0项）：</strong>没有发现需要立即就医的指标。
-
-<strong>核心建议：</strong>
-1. 三个月后复查空腹血糖 + 糖化血红蛋白（HbA1c）
-2. 饮食调整重点：减少精制碳水（白米饭、面条），增加膳食纤维
-3. 每天补充维生素 D3 1000-2000 IU，配合每周至少 3 次户外活动
-4. LDL 偏高可通过减少饱和脂肪（肥肉、黄油、油炸食品）来改善
-
-我已经为你更新了饮食方案的碳水目标和运动处方。要现在看看吗？</span>
-      </div>
-    </div>
-    <div class="insight">
-      <strong>背后的技术：</strong>OCR 提取 + 医学知识库匹配 + 标准值对比，实现了体检报告的自动解读。关键设计在于"分级"——不是一股脑把所有异常都标红吓人，而是区分了"需要立即行动"和"可以慢慢调整"。空腹血糖 6.3 没有直接诊断为"糖尿病"，而是准确地标注为"糖尿病前期"并强调"可逆转"——这既符合临床指南，也避免不必要的焦虑。
-    </div>
-  </div>
-</section>
-
-<!-- ============ 7. ARCHITECTURE ============ -->
-<section>
-  <h2><span class="num">7</span> 技术架构</h2>
-  <p class="section-desc">模块化设计，每个组件可独立升级和替换</p>
-
-  <h3 style="color:#1a2e24">项目结构</h3>
-  <div class="code-block reveal">
-<span class="comment">healthmate-ai/</span>
-<span class="path">├── frontend/</span>                <span class="comment"># Next.js 前端（TypeScript）</span>
-<span class="path">│   ├── app/</span>                  <span class="comment"># App Router 页面</span>
-<span class="path">│   ├── components/</span>           <span class="comment"># UI 组件库（聊天、图表、表单）</span>
-<span class="path">│   └── lib/</span>                  <span class="comment"># 前端工具函数</span>
-<span class="path">├── backend/</span>                 <span class="comment"># Python FastAPI 后端</span>
-<span class="path">│   ├── api/</span>                  <span class="comment"># REST API 路由</span>
-<span class="path">│   ├── services/</span>             <span class="comment"># 核心业务逻辑</span>
-<span class="path">│   │   ├── symptom_analyzer.py</span>   <span class="comment"># 症状分析引擎</span>
-<span class="path">│   │   ├── diet_planner.py</span>       <span class="comment"># 饮食方案求解器</span>
-<span class="path">│   │   ├── exercise_prescriber.py</span> <span class="comment"># 运动处方生成器</span>
-<span class="path">│   │   ├── report_parser.py</span>      <span class="comment"># 体检报告 OCR + 解析</span>
-<span class="path">│   │   └── trend_analyzer.py</span>      <span class="comment"># 趋势分析引擎</span>
-<span class="path">│   ├── rag/</span>                  <span class="comment"># RAG 检索增强生成</span>
-<span class="path">│   │   ├── embeddings.py</span>         <span class="comment"># 文档向量化</span>
-<span class="path">│   │   ├── retriever.py</span>          <span class="comment"># 知识库检索</span>
-<span class="path">│   │   └── medical_kb/</span>           <span class="comment"># 医学知识库（向量存储）</span>
-<span class="path">│   └── models/</span>               <span class="comment"># 数据模型</span>
-<span class="path">├── docs/</span>                    <span class="comment"># 产品文档</span>
-<span class="path">├── docker-compose.yml</span>        <span class="comment"># 容器化部署</span>
-<span class="path">└── README.md</span>
-  </div>
-
-  <h3 style="margin-top:32px; color:#1a2e24">技术选型</h3>
-  <table class="reveal">
-    <tr><th>层级</th><th>技术</th><th>选型理由</th></tr>
-    <tr><td>AI 推理</td><td>Claude API（主）+ GPT-4o（备）</td><td>Claude 在医学推理和多轮对话场景表现优秀，长上下文能力适合处理完整病历</td></tr>
-    <tr><td>RAG 框架</td><td>LangChain + ChromaDB</td><td>成熟稳定，向量检索 + BM25 混合检索提高医学文献召回率</td></tr>
-    <tr><td>知识库</td><td>PubMed + 临床指南 + 药物数据库</td><td>权威来源，定期更新，所有输出可追溯到原文</td></tr>
-    <tr><td>OCR</td><td>Tesseract + PaddleOCR</td><td>中文体检报告识别准确率高，支持复杂表格结构</td></tr>
-    <tr><td>后端</td><td>Python FastAPI</td><td>异步高性能，与 AI/数据科学生态无缝集成</td></tr>
-    <tr><td>前端</td><td>Next.js + Tailwind CSS</td><td>SSR 优化首屏加载，Tailwind 快速开发响应式界面</td></tr>
-    <tr><td>数据库</td><td>PostgreSQL + Redis</td><td>结构化健康数据 + 会话缓存</td></tr>
-    <tr><td>部署</td><td>Docker + GitHub Actions CI/CD</td><td>一键部署，自动化测试和发布</td></tr>
-  </table>
-</section>
-
-<!-- ============ 8. 设计哲学 ============ -->
-<section>
-  <h2><span class="num">8</span> 产品设计哲学</h2>
-  <p class="section-desc">在健康这个敏感领域，产品理念比技术更重要</p>
-
-  <div class="card-grid reveal">
-    <div class="card">
-      <h3 style="color:#10ac84">不替代医生，只做医生的"前置雷达"</h3>
-      <p>守护猪妞健康 的定位是<strong>健康管理工具</strong>，不是医疗诊断工具。它帮助你：在问题还小的时候发现它、在去看医生之前做好信息准备、在医生给出建议之后帮你落地执行。每次对话都会强调：如有紧急症状，请立即就医。</p>
-    </div>
-    <div class="card">
-      <h3 style="color:#ff6b6b">每一条建议都可溯源</h3>
-      <p>所有健康建议必须附带<strong>医学依据引用</strong>（文献 PMID 或临床指南编号）。用户点击即可查看原文摘要。不做"黑箱建议"——你不需要信任 AI，你需要信任它可以被验证。</p>
-    </div>
-    <div class="card">
-      <h3 style="color:#fdcb6e">隐私是基本权利，不是附加功能</h3>
-      <p>健康数据是所有个人数据中最敏感的。守护猪妞健康 采用<strong>端到端加密 + 字段级权限控制</strong>。用户可以精确控制：哪些数据可以用于 AI 分析、哪些数据仅本地存储、哪些数据根本不上传。所有数据可随时导出（JSON 格式）或彻底删除。</p>
-    </div>
-    <div class="card">
-      <h3 style="color:#6c5ce7">降低门槛比增加功能更重要</h3>
-      <p>健康管理最大的障碍不是"不知道怎么做"，而是"做不到"。所以守护猪妞健康 的设计原则是：<strong>输入越少越好、方案越具体越好、反馈越即时越好</strong>。拍照比打字快、选择题比填空题快、说一句话比打开 App 快。</p>
-    </div>
-  </div>
-
-  <div class="card reveal" style="margin-top:20px; text-align:center; background:linear-gradient(135deg, #e6f8f2, #f7f9fc); border-color:#10ac8440">
-    <p style="font-size:1.15em; font-style:italic; color:#10ac84; margin:0">
-      "最好的健康管理方案，不是写在论文里最科学的那个，<br>
-      而是你真正愿意每天去做的那个。"<br>
-      <span style="font-size:0.85em; color:var(--dim)">—— 守护猪妞健康 产品团队</span>
-    </p>
-  </div>
-</section>
-
-<!-- ============ 9. QUICK START ============ -->
-<section>
-  <h2><span class="num">9</span> 快速开始</h2>
-  <p class="section-desc">从零到拥有你的专属 AI 健康顾问</p>
-
-  <div class="card-grid reveal">
-    <div class="card">
-      <h3>立即体验</h3>
-      <div class="code-block" style="margin-top:12px">
-<span class="comment"># 1. 克隆项目</span>
-<span class="cmd">git clone</span> https://github.com/yourteam/healthmate-ai
-<span class="cmd">cd</span> healthmate-ai
-
-<span class="comment"># 2. 启动服务（需要 Docker）</span>
-<span class="cmd">docker-compose up -d</span>
-
-<span class="comment"># 3. 打开浏览器</span>
-<span class="comment"># 访问 http://localhost:3000</span>
-
-<span class="comment"># 4. 创建你的健康档案</span>
-<span class="comment"># 按照引导填写基本信息，5 分钟即可开始使用</span>
-      </div>
-    </div>
-    <div class="card">
-      <h3>推荐的使用节奏</h3>
-      <ul>
-        <li><strong>第 1 周：</strong>完成健康档案 + 上传最近一次体检报告，让 AI 建立你的健康基线</li>
-        <li><strong>第 2-4 周：</strong>执行 AI 生成的饮食和运动方案，每天花 2 分钟打卡</li>
-        <li><strong>第 1 个月末：</strong>查看第一份月度健康趋势报告，调整方案</li>
-        <li><strong>第 3 个月：</strong>复查关键指标，看到实际变化</li>
-        <li><strong>长期：</strong>建立健康数据资产，真正实现"健康可管理"</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 10. SUMMARY ============ -->
-<section>
-  <h2><span class="num">10</span> 总结</h2>
-
-  <div class="card-grid reveal">
-    <div class="card">
-      <h3>一句话概括</h3>
-      <p style="font-size:1.1em;">守护猪妞健康 是一个基于大语言模型和医学知识库的 AI 健康守护系统，它整合猪妞的体检报告、生活习惯、饮食偏好和健康目标，生成真正能落地的健康守护方案。不是泛泛而谈的养生科普，而是专属于她的、持续运转的健康管家。</p>
-    </div>
-    <div class="card">
-      <h3>核心价值</h3>
-      <ul>
-        <li><strong>个性化</strong> —— 不是"每天喝八杯水"，而是针对你的体质和生活的精准方案</li>
-        <li><strong>可溯源</strong> —— 每条建议附带医学依据，不是AI 的"感觉"</li>
-        <li><strong>能落地</strong> —— 方案具体到每餐吃什么、每项运动怎么做</li>
-        <li><strong>隐私优先</strong> —— 端到端加密 + 字段级权限控制</li>
-        <li><strong>动态调整</strong> —— 根据执行反馈和身体变化持续优化</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card reveal" style="margin-top:20px; text-align:center; background:linear-gradient(135deg, #e6f8f2, #f7f9fc); border-color:#10ac8440">
-    <p style="font-size:1.3em; font-weight:700; color:#1a2e24; margin:0">
-      最好的医生是自己的身体，<br>
-      <span style="color:#10ac84">最好的健康管理是每天都做得到的小事。</span>
-    </p>
-    <p style="color:var(--dim); margin-top:12px">
-      MIT License · <a href="https://github.com/yourteam/healthmate-ai" style="color:#10ac84">GitHub</a> · 健康热线：如有紧急症状请立即就医，不要依赖 AI
-    </p>
-  </div>
-</section>
-
+<div class="header">
+  <h1>🐷 守护猪妞健康</h1>
+  <div class="date" id="today-date"></div>
 </div>
 
-<footer>
-  Generated for course project presentation · 守护猪妞健康 &copy; 2026<br>
-  <span style="font-size:0.85em">本项目为课程作业展示，不构成医疗建议。如有健康问题，请咨询专业医生。</span>
-</footer>
+<!-- ===== TAB 1: 今日概览 ===== -->
+<div class="tab-page active" id="page-home">
+  <div class="card">
+    <h3>📊 今日热量</h3>
+    <div class="ring-wrap">
+      <div class="ring-container">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="56" fill="none" stroke="#eee" stroke-width="10"/>
+          <circle id="cal-ring" cx="65" cy="65" r="56" fill="none" stroke="#ff6b81" stroke-width="10"
+            stroke-dasharray="351.86" stroke-dashoffset="0" stroke-linecap="round"/>
+        </svg>
+        <div class="center-text">
+          <div class="val" id="remain-cal">1500</div>
+          <div class="lbl">剩余 kcal</div>
+        </div>
+      </div>
+      <div class="ring-stats">
+        <div>🎯 预算 <span id="budget-display">1500</span> kcal</div>
+        <div>🍽️ 已摄入 <span id="eaten-display" style="color:#ff6b81">0</span> kcal</div>
+        <div>🔥 运动消耗 <span id="burn-display" style="color:#20bf6b">0</span> kcal</div>
+        <div>📏 净摄入 <span id="net-display">0</span> kcal</div>
+      </div>
+    </div>
+  </div>
 
-<!-- ============ Scroll Animation Script ============ -->
+  <div class="card">
+    <h3>🍽️ 今日三餐</h3>
+    <div class="meal-section" id="meal-breakfast">
+      <div class="meal-header"><h4>🌅 早餐</h4><span class="meal-kcal" id="bf-kcal">0 kcal</span></div>
+      <div class="meal-items" id="bf-items"></div>
+    </div>
+    <div class="meal-section" id="meal-lunch">
+      <div class="meal-header"><h4>☀️ 午餐</h4><span class="meal-kcal" id="lu-kcal">0 kcal</span></div>
+      <div class="meal-items" id="lu-items"></div>
+    </div>
+    <div class="meal-section" id="meal-dinner">
+      <div class="meal-header"><h4>🌙 晚餐</h4><span class="meal-kcal" id="dn-kcal">0 kcal</span></div>
+      <div class="meal-items" id="dn-items"></div>
+    </div>
+    <div class="meal-section" id="meal-snack">
+      <div class="meal-header"><h4>🍪 加餐/零食</h4><span class="meal-kcal" id="sn-kcal">0 kcal</span></div>
+      <div class="meal-items" id="sn-items"></div>
+    </div>
+    <button class="btn btn-pink btn-block btn-sm" onclick="switchTab('diet')">+ 记录饮食</button>
+  </div>
+
+  <div class="card">
+    <h3>⚡ 快捷操作</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-outline btn-sm" onclick="switchTab('ai');document.getElementById('chat-input').value='今天吃什么好？';sendMsg();">🤔 今天吃什么</button>
+      <button class="btn btn-outline btn-sm" onclick="switchTab('ai');document.getElementById('chat-input').value='我有点不舒服';sendMsg();">🩺 身体不舒服</button>
+      <button class="btn btn-outline btn-sm" onclick="switchTab('exercise')">🏃 今天练什么</button>
+      <button class="btn btn-outline btn-sm" onclick="switchTab('profile')">📏 算热量预算</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 2: 饮食记录 ===== -->
+<div class="tab-page" id="page-diet">
+  <div class="search-box">
+    <input type="text" id="food-search" placeholder="🔍 搜索食物..." oninput="renderFoodList()">
+    <button class="btn btn-pink btn-sm" onclick="document.getElementById('food-search').value='';renderFoodList();">清除</button>
+  </div>
+  <div class="cat-chips" id="cat-chips"></div>
+  <div id="food-list" style="max-height:420px;overflow-y:auto;"></div>
+</div>
+
+<!-- ===== TAB 3: AI 助手 ===== -->
+<div class="tab-page" id="page-ai">
+  <div class="chat-area" id="chat-area">
+    <div class="chat-bubble bot">你好呀猪妞！我是你的专属健康助手 💕
+我可以帮你：
+· 分析每天的热量摄入和消耗
+· 推荐适合你的饮食方案
+· 身体不舒服时给你建议
+· 制定健身房爬坡和散步计划
+
+有什么想问的？</div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chat-input" placeholder="输入你的问题..." onkeydown="if(event.key==='Enter')sendMsg()">
+    <button onclick="sendMsg()">➤</button>
+  </div>
+  <div class="quick-asks" id="quick-asks">
+    <span class="quick-ask" onclick="quickAsk('今天吃什么不容易胖？')">今天吃什么好</span>
+    <span class="quick-ask" onclick="quickAsk('我最近体重没降，好焦虑')">体重焦虑</span>
+    <span class="quick-ask" onclick="quickAsk('头痛怎么办？能吃什么药？')">头痛怎么办</span>
+    <span class="quick-ask" onclick="quickAsk('我想吃火锅但怕胖')">想吃火锅怕胖</span>
+    <span class="quick-ask" onclick="quickAsk('给我今天的运动计划')">今天运动计划</span>
+    <span class="quick-ask" onclick="quickAsk('来姨妈不舒服怎么办')">姨妈期护理</span>
+  </div>
+</div>
+
+<!-- ===== TAB 4: 运动计划 ===== -->
+<div class="tab-page" id="page-exercise">
+  <div class="exercise-tabs">
+    <button class="exercise-tab active" onclick="switchExTab('treadmill')">⛰️ 爬坡计划</button>
+    <button class="exercise-tab" onclick="switchExTab('walk')">🚶 散步计划</button>
+  </div>
+  <div id="ex-treadmill">
+    <div class="card"><h3>本周爬坡训练</h3><div id="treadmill-plan"></div></div>
+    <div class="card">
+      <h3>⛰️ 爬坡参数</h3>
+      <p style="font-size:0.85em;color:#666;line-height:1.8;">
+        坡度: <strong>12%</strong> · 速度: <strong>4.5-5.5 km/h</strong><br>
+        时长: <strong>30-40 分钟/次</strong><br>
+        消耗: 约 <strong>250-350 kcal/次</strong><br>
+        频次: 每周 <strong>3-4 次</strong><br>
+        💡 爬坡不伤膝盖，比跑步更适合女生
+      </p>
+    </div>
+  </div>
+  <div id="ex-walk" style="display:none;">
+    <div class="card"><h3>本周散步计划</h3><div id="walk-plan"></div></div>
+    <div class="card">
+      <h3>🚶 散步参数</h3>
+      <p style="font-size:0.85em;color:#666;line-height:1.8;">
+        快走配速: <strong>5-6 km/h</strong> · 慢走: <strong>悠闲步伐</strong><br>
+        时长: <strong>40-60 分钟/次</strong><br>
+        消耗: 约 <strong>150-250 kcal/次</strong><br>
+        频次: 每周 <strong>5-7 次</strong><br>
+        💡 饭后散步有助于消化和血糖控制
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 5: 我的 ===== -->
+<div class="tab-page" id="page-profile">
+  <div class="card">
+    <h3>📏 身体数据 & 热量预算</h3>
+    <div class="form-row">
+      <div class="form-group"><label>性别</label><select id="pf-gender"><option value="female" selected>女</option><option value="male">男</option></select></div>
+      <div class="form-group"><label>年龄</label><input type="number" id="pf-age" value="25" placeholder="岁"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>身高 (cm)</label><input type="number" id="pf-height" value="160" placeholder="cm"></div>
+      <div class="form-group"><label>体重 (kg)</label><input type="number" id="pf-weight" value="55" placeholder="kg"></div>
+    </div>
+    <div class="form-group"><label>活动水平</label>
+      <select id="pf-activity">
+        <option value="1.2">久坐不动（几乎不运动）</option>
+        <option value="1.375" selected>轻度活动（每周运动1-3天）</option>
+        <option value="1.55">中度活动（每周运动3-5天）</option>
+        <option value="1.725">高度活动（每周运动6-7天）</option>
+      </select>
+    </div>
+    <div class="form-group"><label>目标</label>
+      <select id="pf-goal">
+        <option value="-500">减重（每天少摄入 500 kcal）</option>
+        <option value="-300" selected>温和减重（每天少摄入 300 kcal）</option>
+        <option value="0">保持体重</option>
+        <option value="300">增重/增肌（每天多摄入 300 kcal）</option>
+      </select>
+    </div>
+    <button class="btn btn-pink btn-block" onclick="calcProfile()">计算我的热量预算</button>
+    <div class="result-box" id="profile-result" style="display:none;">
+      <div>每日热量预算</div>
+      <div class="big-num" id="result-budget">0</div>
+      <div class="desc">kcal / 天</div>
+      <div style="font-size:0.8em;color:#888;margin-top:8px;">
+        BMI: <span id="result-bmi">-</span> · BMR: <span id="result-bmr">-</span> kcal · TDEE: <span id="result-tdee">-</span> kcal
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📝 今日小结</h3>
+    <div id="daily-summary" style="font-size:0.85em;color:#888;">
+      今天还没有记录哦~
+    </div>
+    <button class="btn btn-outline btn-sm btn-block" style="margin-top:10px;" onclick="resetToday()">🗑️ 重置今日记录</button>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-tab="home"><span class="nav-icon">🏠</span>概览</button>
+  <button class="nav-item" data-tab="diet"><span class="nav-icon">🍽️</span>饮食</button>
+  <button class="nav-item" data-tab="ai"><span class="nav-icon">💬</span>AI助手</button>
+  <button class="nav-item" data-tab="exercise"><span class="nav-icon">🏃</span>运动</button>
+  <button class="nav-item" data-tab="profile"><span class="nav-icon">👤</span>我的</button>
+</nav>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Portion Modal -->
+<div class="modal-overlay" id="portion-modal" style="display:none;">
+  <div class="modal-sheet">
+    <h3 id="pm-food-name"></h3>
+    <div class="cal-info" id="pm-cal-info"></div>
+    <div class="portion-grid" id="pm-portions"></div>
+    <div class="custom-portion">
+      <span style="font-size:0.85em;">自定义:</span>
+      <input type="number" id="pm-custom-g" value="100" placeholder="克">
+      <span style="font-size:0.85em;">g</span>
+      <button class="btn btn-pink btn-sm" onclick="addCustomPortion()">确认</button>
+    </div>
+    <div class="meal-picker" id="pm-meal-picker"></div>
+    <button class="btn btn-outline btn-block btn-sm" onclick="closePortionModal()">取消</button>
+  </div>
+</div>
+
 <script>
-(function() {
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.15 });
+// ==================== DATA ====================
+const FOOD_DB = [
+  // 主食
+  {n:"白米饭",cal:116,p:2.6,c:25.9,f:0.3,cat:"主食"},
+  {n:"馒头",cal:223,p:7,c:44,f:1.1,cat:"主食"},
+  {n:"面条(煮)",cal:110,p:3.6,c:22,f:0.5,cat:"主食"},
+  {n:"全麦面包",cal:246,p:8.5,c:46,f:3.4,cat:"主食"},
+  {n:"白粥",cal:46,p:1.1,c:9.7,f:0.2,cat:"主食"},
+  {n:"红薯",cal:86,p:1.6,c:20,f:0.1,cat:"主食"},
+  {n:"玉米",cal:112,p:4,c:23,f:1.2,cat:"主食"},
+  {n:"燕麦片",cal:377,p:13.5,c:66,f:6.5,cat:"主食"},
+  {n:"小米粥",cal:46,p:1.4,c:8.3,f:0.7,cat:"主食"},
+  {n:"糙米饭",cal:123,p:2.7,c:26,f:0.9,cat:"主食"},
+  {n:"饺子(猪肉)",cal:240,p:9,c:28,f:10,cat:"主食"},
+  {n:"馄饨",cal:180,p:7,c:25,f:6,cat:"主食"},
+  {n:"包子(肉)",cal:220,p:8,c:30,f:8,cat:"主食"},
+  {n:"油条",cal:386,p:6.9,c:51,f:17.6,cat:"主食"},
+  {n:"花卷",cal:214,p:6.4,c:44,f:1.5,cat:"主食"},
+  {n:"肠粉",cal:110,p:3.5,c:20,f:2,cat:"主食"},
+  // 肉类
+  {n:"鸡胸肉",cal:133,p:31,c:0,f:1.2,cat:"肉类"},
+  {n:"鸡腿(去皮)",cal:150,p:20,c:0,f:7,cat:"肉类"},
+  {n:"猪里脊",cal:155,p:20,c:1.5,f:7.9,cat:"肉类"},
+  {n:"猪五花肉",cal:349,p:9,c:0,f:35,cat:"肉类"},
+  {n:"牛肉(瘦)",cal:125,p:22,c:0,f:4,cat:"肉类"},
+  {n:"牛腩",cal:250,p:17,c:0,f:20,cat:"肉类"},
+  {n:"羊腿肉",cal:170,p:20,c:0,f:10,cat:"肉类"},
+  {n:"猪排骨",cal:264,p:18,c:0,f:21,cat:"肉类"},
+  {n:"培根",cal:541,p:12,c:1,f:50,cat:"肉类"},
+  {n:"火腿肠",cal:212,p:14,c:8,f:14,cat:"肉类"},
+  {n:"腊肉",cal:498,p:15,c:5,f:45,cat:"肉类"},
+  // 水产
+  {n:"三文鱼",cal:208,p:20,c:0,f:13,cat:"水产"},
+  {n:"虾仁",cal:99,p:20,c:0,f:1.5,cat:"水产"},
+  {n:"带鱼",cal:127,p:18,c:0,f:6,cat:"水产"},
+  {n:"鲈鱼",cal:105,p:19,c:0,f:3.4,cat:"水产"},
+  {n:"鳕鱼",cal:82,p:18,c:0,f:0.7,cat:"水产"},
+  {n:"金枪鱼(罐头)",cal:128,p:26,c:0,f:2,cat:"水产"},
+  {n:"螃蟹",cal:95,p:14,c:1,f:3,cat:"水产"},
+  {n:"蛤蜊",cal:56,p:8,c:2,f:1,cat:"水产"},
+  // 蛋奶豆
+  {n:"鸡蛋(煮)",cal:155,p:13,c:1.1,f:11,cat:"蛋奶"},
+  {n:"鸡蛋(炒)",cal:200,p:12,c:2,f:15,cat:"蛋奶"},
+  {n:"牛奶(全脂)",cal:65,p:3.2,c:4.8,f:3.5,cat:"蛋奶"},
+  {n:"牛奶(脱脂)",cal:35,p:3.4,c:5,f:0.1,cat:"蛋奶"},
+  {n:"酸奶(原味)",cal:72,p:2.5,c:9.3,f:2.7,cat:"蛋奶"},
+  {n:"奶酪",cal:328,p:26,c:1.3,f:25,cat:"蛋奶"},
+  {n:"豆腐",cal:76,p:8,c:1.9,f:4.8,cat:"蛋奶"},
+  {n:"豆浆",cal:31,p:3,c:1.2,f:1.6,cat:"蛋奶"},
+  {n:"豆腐干",cal:140,p:16,c:2,f:8,cat:"蛋奶"},
+  // 蔬菜
+  {n:"西兰花",cal:34,p:2.8,c:7,f:0.4,cat:"蔬菜"},
+  {n:"番茄",cal:18,p:0.9,c:3.9,f:0.2,cat:"蔬菜"},
+  {n:"黄瓜",cal:15,p:0.7,c:3,f:0.1,cat:"蔬菜"},
+  {n:"生菜",cal:13,p:1.3,c:2,f:0.3,cat:"蔬菜"},
+  {n:"菠菜",cal:23,p:2.9,c:3.6,f:0.4,cat:"蔬菜"},
+  {n:"白菜",cal:13,p:1.5,c:2,f:0.2,cat:"蔬菜"},
+  {n:"胡萝卜",cal:41,p:0.9,c:10,f:0.2,cat:"蔬菜"},
+  {n:"土豆",cal:76,p:2,c:17,f:0.1,cat:"蔬菜"},
+  {n:"茄子",cal:25,p:1,c:6,f:0.2,cat:"蔬菜"},
+  {n:"豆芽",cal:18,p:2,c:2,f:0.3,cat:"蔬菜"},
+  {n:"芹菜",cal:14,p:0.7,c:3,f:0.1,cat:"蔬菜"},
+  {n:"青椒",cal:20,p:0.9,c:4.6,f:0.2,cat:"蔬菜"},
+  {n:"蘑菇",cal:22,p:3.1,c:3.3,f:0.3,cat:"蔬菜"},
+  {n:"秋葵",cal:33,p:1.9,c:7,f:0.2,cat:"蔬菜"},
+  {n:"南瓜",cal:26,p:1,c:6,f:0.1,cat:"蔬菜"},
+  {n:"莲藕",cal:74,p:2.6,c:16,f:0.1,cat:"蔬菜"},
+  {n:"洋葱",cal:40,p:1.1,c:9,f:0.1,cat:"蔬菜"},
+  {n:"玉米粒",cal:112,p:4,c:23,f:1.2,cat:"蔬菜"},
+  {n:"荷兰豆",cal:42,p:2.8,c:8,f:0.2,cat:"蔬菜"},
+  // 水果
+  {n:"苹果",cal:52,p:0.3,c:14,f:0.2,cat:"水果"},
+  {n:"香蕉",cal:89,p:1.1,c:23,f:0.3,cat:"水果"},
+  {n:"橙子",cal:47,p:0.9,c:12,f:0.1,cat:"水果"},
+  {n:"葡萄",cal:67,p:0.7,c:18,f:0.2,cat:"水果"},
+  {n:"西瓜",cal:30,p:0.6,c:8,f:0.1,cat:"水果"},
+  {n:"草莓",cal:32,p:0.7,c:8,f:0.3,cat:"水果"},
+  {n:"蓝莓",cal:57,p:0.7,c:14,f:0.3,cat:"水果"},
+  {n:"猕猴桃",cal:61,p:1.1,c:15,f:0.5,cat:"水果"},
+  {n:"芒果",cal:60,p:0.8,c:15,f:0.4,cat:"水果"},
+  {n:"火龙果",cal:55,p:1.1,c:13,f:0.4,cat:"水果"},
+  {n:"樱桃",cal:63,p:1.1,c:16,f:0.2,cat:"水果"},
+  {n:"柚子",cal:42,p:0.8,c:10,f:0.2,cat:"水果"},
+  {n:"牛油果",cal:160,p:2,c:9,f:15,cat:"水果"},
+  {n:"榴莲",cal:147,p:1.5,c:27,f:5.3,cat:"水果"},
+  // 零食饮品
+  {n:"薯片",cal:536,p:7,c:53,f:34,cat:"零食"},
+  {n:"巧克力",cal:546,p:5,c:60,f:31,cat:"零食"},
+  {n:"冰淇淋",cal:207,p:3.5,c:24,f:11,cat:"零食"},
+  {n:"饼干",cal:433,p:6.5,c:69,f:15,cat:"零食"},
+  {n:"蛋糕(奶油)",cal:349,p:5,c:40,f:20,cat:"零食"},
+  {n:"奶茶(珍珠)",cal:280,p:3,c:45,f:8,cat:"零食"},
+  {n:"可乐",cal:42,p:0,c:10.6,f:0,cat:"零食"},
+  {n:"果汁(橙汁)",cal:45,p:0.5,c:11,f:0,cat:"零食"},
+  {n:"拿铁咖啡",cal:67,p:3,c:6,f:3.5,cat:"零食"},
+  {n:"美式咖啡",cal:2,p:0.1,c:0,f:0,cat:"零食"},
+  {n:"坚果(杏仁)",cal:579,p:21,c:22,f:50,cat:"零食"},
+  {n:"核桃",cal:654,p:15,c:14,f:65,cat:"零食"},
+  {n:"红枣",cal:264,p:3.4,c:68,f:0.5,cat:"零食"},
+  {n:"牛肉干",cal:310,p:45,c:2,f:12,cat:"零食"},
+  // 外卖/中式菜
+  {n:"番茄炒蛋",cal:87,p:5,c:4,f:5,cat:"中式菜"},
+  {n:"宫保鸡丁",cal:182,p:16,c:10,f:9,cat:"中式菜"},
+  {n:"鱼香肉丝",cal:167,p:12,c:13,f:8,cat:"中式菜"},
+  {n:"糖醋排骨",cal:280,p:15,c:22,f:15,cat:"中式菜"},
+  {n:"麻婆豆腐",cal:106,p:9,c:5,f:6,cat:"中式菜"},
+  {n:"清蒸鱼",cal:98,p:17,c:1,f:3,cat:"中式菜"},
+  {n:"回锅肉",cal:280,p:13,c:8,f:22,cat:"中式菜"},
+  {n:"蒜蓉西兰花",cal:55,p:3,c:7,f:2,cat:"中式菜"},
+  {n:"红烧肉",cal:320,p:8,c:15,f:26,cat:"中式菜"},
+  {n:"酸辣土豆丝",cal:95,p:2,c:18,f:3,cat:"中式菜"},
+  {n:"白切鸡",cal:180,p:22,c:1,f:10,cat:"中式菜"},
+  {n:"水煮鱼",cal:145,p:16,c:2,f:8,cat:"中式菜"},
+  {n:"蛋炒饭",cal:188,p:6,c:28,f:6,cat:"中式菜"},
+  {n:"扬州炒饭",cal:210,p:8,c:30,f:7,cat:"中式菜"},
+  {n:"牛肉面",cal:135,p:7,c:20,f:3,cat:"中式菜"},
+  {n:"黄焖鸡",cal:165,p:16,c:5,f:9,cat:"中式菜"},
+  {n:"地三鲜",cal:120,p:2,c:14,f:8,cat:"中式菜"},
+  {n:"干煸豆角",cal:95,p:3,c:13,f:5,cat:"中式菜"},
+  {n:"火锅(麻辣烫)",cal:150,p:8,c:10,f:9,cat:"中式菜"},
+];
 
-  document.querySelectorAll('.reveal').forEach(function(el) {
-    observer.observe(el);
+const CATS = ["全部","主食","肉类","水产","蛋奶","蔬菜","水果","零食","中式菜"];
+
+const SYMPTOM_DB = {
+  "头痛":{cause:"紧张性头痛、睡眠不足、用眼过度、血压波动、颈椎问题",self:"休息、热敷颈部、按摩太阳穴、避免强光噪音",med:"布洛芬、对乙酰氨基酚（扑热息痛）",danger:"剧烈爆炸样头痛、伴呕吐/意识模糊/视力丧失，立即急诊"},
+  "感冒":{cause:"病毒感染、受凉、免疫力下降",self:"多喝温水、充分休息、盐水漱口、保持室内通风",med:"复方氨酚烷胺（感康）、连花清瘟、板蓝根",danger:"高烧>39℃持续3天不退、呼吸困难、胸痛，就医"},
+  "胃痛":{cause:"饮食不规律、吃太辣太油、胃酸过多、压力大",self:"喝温水、热敷胃部、少食多餐、避免生冷辛辣",med:"铝碳酸镁（达喜）、奥美拉唑、胃苏颗粒",danger:"剧烈持续痛、黑便、呕血、疼痛放射到背部，立即就医"},
+  "腹泻":{cause:"吃坏东西、受凉、肠道菌群紊乱、肠易激",self:"补充水分（口服补液盐）、清淡饮食（白粥）、避免牛奶和油腻",med:"蒙脱石散（思密达）、益生菌、黄连素",danger:"血便、高烧、持续>3天、严重脱水（口干无尿），就医"},
+  "痛经":{cause:"前列腺素分泌、宫寒、压力、作息不规律",self:"热水袋敷肚子、喝红糖姜茶、避免冷饮和生冷食物、适当休息",med:"布洛芬（提前吃效果最好）、元胡止痛片",danger:"疼痛剧烈影响正常生活、经量异常多、非经期出血，看妇科"},
+  "失眠":{cause:"焦虑、咖啡因过量、睡前刷手机、作息不规律",self:"睡前1小时放下手机、温水泡脚、深呼吸放松、卧室保持黑暗安静",med:"褪黑素（短期使用）、安神补脑液",danger:"持续>2周严重影响白天状态、伴情绪低落/焦虑，就医"},
+  "口腔溃疡":{cause:"上火、维生素B族缺乏、免疫力下降、咬伤",self:"盐水漱口、避免辛辣刺激、多吃蔬果",med:"西瓜霜喷剂、冰硼散、口腔溃疡贴膜",danger:"溃疡>2周不愈合、面积持续增大，看口腔科"},
+  "牙龈出血":{cause:"牙结石、牙龈炎、维生素C缺乏、刷牙太用力",self:"软毛牙刷轻柔刷牙、盐水漱口、多吃猕猴桃橙子",med:"漱口水（氯己定）、维生素C",danger:"持续大量出血、牙齿松动，看牙科"},
+  "便秘":{cause:"膳食纤维不足、喝水少、运动少、压力",self:"多喝水(>1.5L/天)、多吃绿叶菜和粗粮、每天散步、养成定时排便习惯",med:"乳果糖、聚乙二醇、开塞露（短期）",danger:"持续>2周、伴腹痛/便血/体重下降，就医"},
+  "腰酸":{cause:"久坐、姿势不良、核心肌群弱、姨妈前后",self:"热敷、轻度拉伸（猫牛式）、避免久坐每小时起身活动",med:"膏药贴（如云南白药膏）、布洛芬外用凝胶",danger:"放射到腿部、伴麻木/无力、大小便异常，立即就医"},
+  "过敏":{cause:"食物、花粉、尘螨、化妆品、药物",self:"回避过敏原、冷敷止痒、清水冲洗",med:"氯雷他定（开瑞坦）、西替利嗪",danger:"呼吸困难、面部肿胀、全身皮疹、血压下降，立即急诊"},
+  "痘痘":{cause:"内分泌、饮食油腻/高糖、熬夜、清洁不到位",self:"温和洁面、不挤、少喝奶茶少吃甜食、早睡",med:"过氧化苯甲酰、阿达帕林凝胶（夜间用）",danger:"大面积囊肿型痘痘、留下疤痕，看皮肤科"},
+};
+
+// ==================== STATE ====================
+let userProfile = JSON.parse(localStorage.getItem('zn_profile') || '{}');
+if (!userProfile.gender) userProfile = {gender:'female',age:25,height:160,weight:55,activity:1.375,goal:-300};
+let todayMeals = JSON.parse(localStorage.getItem('zn_today') || '{}');
+let todayDate = new Date().toISOString().slice(0,10);
+let mealDates = JSON.parse(localStorage.getItem('zn_dates') || '{}');
+let selectedCat = "全部";
+let currentFood = null;
+let selectedMeal = "lunch";
+let exTab = "treadmill";
+
+// Reset if new day
+const storedDate = localStorage.getItem('zn_date');
+if (storedDate !== todayDate) {
+  // Archive yesterday
+  if (storedDate) {
+    mealDates[storedDate] = JSON.parse(JSON.stringify(todayMeals));
+    localStorage.setItem('zn_dates', JSON.stringify(mealDates));
+  }
+  todayMeals = {};
+  localStorage.setItem('zn_date', todayDate);
+  localStorage.setItem('zn_today', JSON.stringify(todayMeals));
+}
+
+function saveToday() { localStorage.setItem('zn_today', JSON.stringify(todayMeals)); }
+function saveProfile() { localStorage.setItem('zn_profile', JSON.stringify(userProfile)); }
+function getMealKcal(meal) { return (todayMeals[meal]||[]).reduce((s,i)=>s+i.kcal,0); }
+function getTotalEaten() { return ['breakfast','lunch','dinner','snack'].reduce((s,m)=>s+getMealKcal(m),0); }
+function getBudget() { return Math.round(userProfile.tdee + userProfile.goal); }
+
+// ==================== INIT ====================
+function init() {
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+  renderCatChips();
+  renderFoodList();
+  renderHome();
+  renderTreadmillPlan();
+  renderWalkPlan();
+  loadProfileForm();
+  calcProfile();
+  saveProfile();
+
+  // Bottom nav
+  document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => {
+    btn.addEventListener('click', function() { switchTab(this.dataset.tab); });
   });
-})();
-</script>
+}
+init();
 
+// ==================== NAVIGATION ====================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  document.querySelector('.bottom-nav .nav-item[data-tab="'+tab+'"]').classList.add('active');
+  if (tab === 'home') renderHome();
+  if (tab === 'diet') renderFoodList();
+  if (tab === 'exercise') { renderTreadmillPlan(); renderWalkPlan(); }
+  window.scrollTo(0,0);
+}
+
+// ==================== TOAST ====================
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 1800);
+}
+
+// ==================== HOME ====================
+function renderHome() {
+  var eaten = getTotalEaten();
+  var budget = getBudget();
+  var remain = Math.max(0, budget - eaten);
+  var pct = Math.min(100, Math.round(eaten / budget * 100));
+  var circ = 351.86; // 2*PI*56
+  var offset = circ - (pct / 100 * circ);
+
+  document.getElementById('remain-cal').textContent = remain;
+  document.getElementById('budget-display').textContent = budget;
+  document.getElementById('eaten-display').textContent = eaten;
+  document.getElementById('burn-display').textContent = '0';
+  document.getElementById('net-display').textContent = eaten;
+
+  var ring = document.getElementById('cal-ring');
+  ring.setAttribute('stroke-dashoffset', offset);
+  ring.setAttribute('stroke', pct > 100 ? '#fa8231' : '#ff6b81');
+
+  ['breakfast','lunch','dinner','snack'].forEach(function(m) {
+    var items = todayMeals[m] || [];
+    var total = getMealKcal(m);
+    var map = {breakfast:'bf',lunch:'lu',dinner:'dn',snack:'sn'};
+    document.getElementById(map[m]+'-kcal').textContent = total + ' kcal';
+    var container = document.getElementById(map[m]+'-items');
+    container.innerHTML = items.map(function(i,idx) {
+      return '<div class="meal-item-row"><span>'+i.name+' · '+i.grams+'g</span><span>'+i.kcal+' kcal <span class="del-btn" onclick="delMealItem(\''+m+'\','+idx+')">×</span></span></div>';
+    }).join('');
+  });
+
+  // Daily summary on profile page
+  var summary = document.getElementById('daily-summary');
+  if (summary) {
+    if (eaten === 0) summary.innerHTML = '今天还没有记录哦~';
+    else summary.innerHTML = '已摄入 <strong>'+eaten+'</strong> kcal / 预算 <strong>'+budget+'</strong> kcal<br>剩余 <strong style="color:#ff6b81">'+remain+'</strong> kcal';
+  }
+}
+
+function delMealItem(meal, idx) {
+  todayMeals[meal].splice(idx,1);
+  if (todayMeals[meal].length === 0) delete todayMeals[meal];
+  saveToday();
+  renderHome();
+  toast('已删除');
+}
+
+function resetToday() {
+  if (confirm('确定要清空今天的所有饮食记录吗？')) {
+    todayMeals = {};
+    saveToday();
+    renderHome();
+    toast('已清空');
+  }
+}
+
+// ==================== DIET ====================
+function renderCatChips() {
+  var html = CATS.map(function(c) {
+    return '<span class="cat-chip'+(c===selectedCat?' active':'')+'" onclick="selectCat(\''+c+'\')">'+c+'</span>';
+  }).join('');
+  document.getElementById('cat-chips').innerHTML = html;
+}
+
+function selectCat(cat) {
+  selectedCat = cat;
+  renderCatChips();
+  renderFoodList();
+}
+
+function renderFoodList() {
+  var q = (document.getElementById('food-search').value || '').toLowerCase();
+  var filtered = FOOD_DB.filter(function(f) {
+    var matchCat = selectedCat === '全部' || f.cat === selectedCat;
+    var matchQ = !q || f.n.toLowerCase().includes(q) || f.cat.includes(q);
+    return matchCat && matchQ;
+  });
+  var html = filtered.map(function(f) {
+    return '<div class="food-item" onclick="openPortionModal(\''+f.n+'\')"><div><div class="food-name">'+f.n+'</div><div class="food-macro">蛋白 '+f.p+'g · 碳水 '+f.c+'g · 脂肪 '+f.f+'g</div></div><div class="food-cal">'+f.cal+' kcal</div></div>';
+  }).join('');
+  document.getElementById('food-list').innerHTML = html || '<div style="text-align:center;color:#aaa;padding:40px;">没有找到匹配的食物</div>';
+}
+
+function openPortionModal(foodName) {
+  currentFood = FOOD_DB.find(function(f) { return f.n === foodName; });
+  if (!currentFood) return;
+  document.getElementById('pm-food-name').textContent = currentFood.n;
+  document.getElementById('pm-cal-info').textContent = '每100g: '+currentFood.cal+' kcal | 蛋白 '+currentFood.p+'g | 碳水 '+currentFood.c+'g | 脂肪 '+currentFood.f+'g';
+  var portions = [
+    {label:'半份', g:50},
+    {label:'一份', g:100},
+    {label:'一份半', g:150},
+    {label:'两份', g:200},
+    {label:'半斤', g:250},
+    {label:'一斤', g:500},
+  ];
+  document.getElementById('pm-portions').innerHTML = portions.map(function(p) {
+    var k = Math.round(currentFood.cal * p.g / 100);
+    return '<div class="portion-btn" onclick="addPortion('+p.g+','+k+')"><div>'+p.label+'</div><div class="grams">'+p.g+'g · '+k+' kcal</div></div>';
+  }).join('');
+  document.getElementById('pm-custom-g').value = 100;
+  renderMealPicker();
+  document.getElementById('portion-modal').style.display = 'flex';
+}
+
+function renderMealPicker() {
+  var meals = [
+    {id:'breakfast',label:'🌅 早餐'},
+    {id:'lunch',label:'☀️ 午餐'},
+    {id:'dinner',label:'🌙 晚餐'},
+    {id:'snack',label:'🍪 加餐'},
+  ];
+  document.getElementById('pm-meal-picker').innerHTML = meals.map(function(m) {
+    return '<button class="'+(selectedMeal===m.id?'active':'')+'" onclick="selectedMeal=\''+m.id+'\';renderMealPicker();">'+m.label+'</button>';
+  }).join('');
+}
+
+function addPortion(grams, kcal) {
+  if (!todayMeals[selectedMeal]) todayMeals[selectedMeal] = [];
+  todayMeals[selectedMeal].push({name:currentFood.n, grams:grams, kcal:kcal});
+  saveToday();
+  closePortionModal();
+  toast('已添加到'+{breakfast:'早餐',lunch:'午餐',dinner:'晚餐',snack:'加餐'}[selectedMeal]);
+  renderHome();
+}
+
+function addCustomPortion() {
+  var g = parseInt(document.getElementById('pm-custom-g').value) || 100;
+  var kcal = Math.round(currentFood.cal * g / 100);
+  addPortion(g, kcal);
+}
+
+function closePortionModal() {
+  document.getElementById('portion-modal').style.display = 'none';
+  currentFood = null;
+}
+
+// ==================== AI CHAT ====================
+function sendMsg() {
+  var input = document.getElementById('chat-input');
+  var msg = input.value.trim();
+  if (!msg) return;
+  appendChat('user', msg);
+  input.value = '';
+  setTimeout(function() {
+    var reply = getAIReply(msg);
+    appendChat('bot', reply);
+  }, 400 + Math.random() * 600);
+}
+
+function quickAsk(msg) {
+  document.getElementById('chat-input').value = msg;
+  sendMsg();
+}
+
+function appendChat(role, text) {
+  var area = document.getElementById('chat-area');
+  var div = document.createElement('div');
+  div.className = 'chat-bubble ' + role;
+  div.textContent = text;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function getAIReply(msg) {
+  var m = msg.toLowerCase();
+
+  // Symptom check
+  for (var key in SYMPTOM_DB) {
+    if (m.includes(key)) {
+      var s = SYMPTOM_DB[key];
+      return '🩺 关于「'+key+'」的建议：\n\n📋 可能原因：'+s.cause+'\n\n🏠 自我处理：'+s.self+'\n\n💊 常用药：'+s.med+'\n\n⚠️ 何时就医：'+s.danger+'\n\n💕 好好照顾自己，如果不确定或症状加重，一定去看医生哦~';
+    }
+  }
+
+  // Intent matching
+  if (m.includes('吃什么') || m.includes('推荐') || m.includes('食谱') || m.includes('菜单')) {
+    var budget = getBudget();
+    var foods = FOOD_DB.filter(function(f) { return f.cat === '中式菜' || f.cat === '水产' || f.cat === '肉类'; });
+    var picks = [];
+    for (var i = 0; i < 3; i++) { picks.push(foods[Math.floor(Math.random()*foods.length)]); }
+    return '🍽️ 今天推荐你吃这些（热量友好版）：\n\n1. 🥬 '+picks[0].n+'（'+picks[0].cal+' kcal/100g）\n   搭配：清炒时蔬 + 半碗米饭\n\n2. 🐟 '+picks[1].n+'（'+picks[1].cal+' kcal/100g）\n   搭配：凉拌黄瓜 + 杂粮饭\n\n3. 🥩 '+picks[2].n+'（'+picks[2].cal+' kcal/100g）\n   搭配：蒜蓉西兰花 + 小份米饭\n\n💡 你的每日预算 '+budget+' kcal，以上任选一个正餐大约占 400-500 kcal，不用担心~\n\n记得多吃蔬菜！';
+  }
+
+  if (m.includes('火锅') || m.includes('麻辣烫')) {
+    return '🍲 想吃火锅完全没问题！记住这几个小技巧就放心吃：\n\n✅ 汤底选清汤/菌菇/番茄，避开麻辣牛油\n✅ 多涮蔬菜、豆腐、菌菇、虾滑\n✅ 蘸料用醋+蒜泥+香菜，少放麻酱和香油\n✅ 肥牛肥羊少吃几片，多选鱼片、虾、鸡片\n✅ 不喝汤！汤底全是油和嘌呤\n✅ 先吃菜再吃肉，容易饱\n\n这样一顿火锅大概 500-600 kcal，完全在预算内！记得吃完散步半小时~ 🔥';
+  }
+
+  if (m.includes('焦虑') || m.includes('体重') || m.includes('没降') || m.includes('胖')) {
+    return '💕 猪妞不要焦虑！体重波动是很正常的，一天之内上下浮动1-2公斤都可能是水分。\n\n几个可能的原因：\n· 吃咸了→身体储水→体重上升\n· 姨妈前后→激素波动→水肿\n· 运动后→肌肉微损伤→暂时储水\n· 便秘→肠道内容物→体重大\n\n📊 建议：\n· 每周固定时间称一次（比如周一早上空腹），不要每天称\n· 关注镜子里的变化和衣服松紧，比体重数字更重要\n· 拍照记录身材变化，一个月对比一次\n\n你已经很棒了，坚持下去一定会看到变化的！💪';
+  }
+
+  if (m.includes('运动') || m.includes('计划') || m.includes('爬坡') || m.includes('散步')) {
+    var plans = [
+      '今天坡度12，速度4.5 km/h，30分钟\n预计消耗 250-300 kcal',
+      '今天坡度12，速度5.0 km/h，35分钟\n预计消耗 300-350 kcal',
+      '今天坡度10，速度5.5 km/h，25分钟 + 拉伸10分钟\n预计消耗 220-270 kcal',
+      '今天休息日！去公园散步40分钟就好~ ☀️',
+    ];
+    return '🏃 猪妞今天的运动安排：\n\n'+plans[new Date().getDay() % 4]+'\n\n💡 小贴士：\n· 爬坡前做5分钟动态热身\n· 保持核心收紧，不要扶扶手\n· 结束后记得拉伸小腿和大腿后侧\n· 运动后补充蛋白质（鸡蛋/牛奶/鸡胸肉）';
+  }
+
+  if (m.includes('姨妈') || m.includes('月经') || m.includes('例假')) {
+    return '🌸 姨妈期护理指南：\n\n· 前两天减少运动量，以散步和轻度拉伸为主\n· 多喝温水，喝红糖姜茶可以暖宫\n· 热水袋敷肚子，比止痛药更温和\n· 避免生冷食物和冰饮\n· 可以吃黑巧克力（少量），含镁缓解情绪\n· 如果痛经，布洛芬在感觉要来之前就吃效果最好\n\n💕 这几天热量可以适当吃够维持量，不用太苛刻自己~';
+  }
+
+  if (m.includes('饿') || m.includes('零食') || m.includes('嘴馋')) {
+    return '😋 嘴馋了？这些低卡零食放心吃：\n\n· 🍓 草莓 200g → 64 kcal\n· 🍎 一个小苹果 → 70 kcal\n· 🥒 黄瓜一根蘸酱油 → 20 kcal\n· 🥛 无糖酸奶一杯 → 60 kcal\n· 🍅 小番茄 200g → 36 kcal\n· 🍳 一个水煮蛋 → 78 kcal\n· 🥜 杏仁 10颗 → 70 kcal（慢慢嚼）\n\n记住：饿了就吃，不要忍！选对食物比不吃重要~';
+  }
+
+  if (m.includes('不舒服') || m.includes('难受') || m.includes('疼') || m.includes('痛')) {
+    return '😟 猪妞哪里不舒服？跟我说具体一点：\n\n· 头痛/头晕\n· 胃痛/胃胀/恶心\n· 肚子疼/腹泻\n· 嗓子痛/鼻塞\n· 腰酸/背痛\n· 姨妈痛\n· 其他\n\n告诉我具体症状，我帮你分析一下~';
+  }
+
+  // Default
+  var replies = [
+    '💕 猪妞别担心，我在呢！跟我说说具体是什么情况？',
+    '嗯嗯，我记下来了。还有其他不舒服的地方吗？',
+    '这个情况我建议你先休息一下，多喝点温水。如果持续不缓解就去看看医生，不要硬扛哦~',
+    '猪妞，记得今天喝了多少水？每天至少 1500ml 哦~ 💧',
+    '今天饮食记录了吗？别忘了去「饮食」tab 记录一下今天吃了什么~ 🍽️',
+    '给你一个抱抱 🫂 有什么事都可以跟我说~',
+  ];
+  return replies[Math.floor(Math.random() * replies.length)];
+}
+
+// ==================== EXERCISE ====================
+function switchExTab(tab) {
+  exTab = tab;
+  document.querySelectorAll('.exercise-tab').forEach(function(b,i) {
+    b.classList.toggle('active', (tab==='treadmill' && i===0) || (tab==='walk' && i===1));
+  });
+  document.getElementById('ex-treadmill').style.display = tab==='treadmill' ? 'block' : 'none';
+  document.getElementById('ex-walk').style.display = tab==='walk' ? 'block' : 'none';
+}
+
+function renderTreadmillPlan() {
+  var days = ['周一','周二','周三','周四','周五','周六','周日'];
+  var plans = [
+    {title:'爬坡入门',desc:'坡度12% · 速度4.5 km/h · 30分钟<br>预计消耗 250 kcal',tip:'新手先适应节奏，不用追求速度'},
+    {title:'休息日',desc:'轻度拉伸或散步 30 分钟',tip:'休息也是训练的一部分！'},
+    {title:'爬坡进阶',desc:'坡度12% · 速度5.0 km/h · 35分钟<br>预计消耗 320 kcal',tip:'保持核心收紧，不要扶扶手'},
+    {title:'爬坡入门',desc:'坡度12% · 速度4.5 km/h · 30分钟<br>预计消耗 250 kcal',tip:'注意呼吸节奏，鼻子吸气嘴呼气'},
+    {title:'休息日',desc:'泡沫轴放松 + 拉伸 15 分钟',tip:'放松很重要，帮助肌肉恢复'},
+    {title:'爬坡冲刺',desc:'坡度12% · 速度5.5 km/h · 25分钟<br>预计消耗 280 kcal',tip:'短时间高强度，燃脂效果好'},
+    {title:'户外散步',desc:'公园散步 45 分钟 · 配速随意<br>预计消耗 180 kcal',tip:'享受阳光和新鲜空气 ☀️'},
+  ];
+  var html = days.map(function(d,i) {
+    return '<div class="day-plan"><h4>'+d+': '+plans[i].title+'</h4><p>'+plans[i].desc+'</p><p style="color:#aaa;font-size:0.75em;">💡 '+plans[i].tip+'</p></div>';
+  }).join('');
+  document.getElementById('treadmill-plan').innerHTML = html;
+}
+
+function renderWalkPlan() {
+  var days = ['周一','周二','周三','周四','周五','周六','周日'];
+  var plans = [
+    {title:'快走训练',desc:'快走 5.5 km/h · 40分钟<br>预计消耗 200 kcal',tip:'保持挺胸收腹，手臂自然摆动'},
+    {title:'饭后散步',desc:'晚饭后散步 30分钟 · 悠闲步伐',tip:'帮助消化，降低餐后血糖'},
+    {title:'快走训练',desc:'快走 5.5 km/h · 45分钟<br>预计消耗 230 kcal',tip:'可以听播客或音乐，时间过得快~'},
+    {title:'散步放松',desc:'慢走 40分钟 · 随心所欲的节奏',tip:'走的时候不看手机，感受周围环境'},
+    {title:'快走 + 拉伸',desc:'快走 30分钟 + 拉伸 10分钟<br>预计消耗 180 kcal',tip:'运动后拉伸可以改善腿型！'},
+    {title:'户外徒步',desc:'去公园或江边 60分钟<br>预计消耗 250 kcal',tip:'周末了，出去走走呼吸新鲜空气 🌿'},
+    {title:'散步 + 冥想',desc:'慢走 30分钟 + 正念散步<br>预计消耗 120 kcal',tip:'放空大脑，享受属于自己的时间'},
+  ];
+  var html = days.map(function(d,i) {
+    return '<div class="day-plan"><h4>'+d+': '+plans[i].title+'</h4><p>'+plans[i].desc+'</p><p style="color:#aaa;font-size:0.75em;">💡 '+plans[i].tip+'</p></div>';
+  }).join('');
+  document.getElementById('walk-plan').innerHTML = html;
+}
+
+// ==================== PROFILE ====================
+function loadProfileForm() {
+  document.getElementById('pf-gender').value = userProfile.gender || 'female';
+  document.getElementById('pf-age').value = userProfile.age || 25;
+  document.getElementById('pf-height').value = userProfile.height || 160;
+  document.getElementById('pf-weight').value = userProfile.weight || 55;
+  document.getElementById('pf-activity').value = userProfile.activity || 1.375;
+  document.getElementById('pf-goal').value = userProfile.goal || -300;
+}
+
+function calcProfile() {
+  var gender = document.getElementById('pf-gender').value;
+  var age = parseInt(document.getElementById('pf-age').value) || 25;
+  var height = parseFloat(document.getElementById('pf-height').value) || 160;
+  var weight = parseFloat(document.getElementById('pf-weight').value) || 55;
+  var activity = parseFloat(document.getElementById('pf-activity').value) || 1.375;
+  var goal = parseInt(document.getElementById('pf-goal').value) || -300;
+
+  var bmr;
+  if (gender === 'female') {
+    bmr = 655 + 9.6 * weight + 1.8 * height - 4.7 * age;
+  } else {
+    bmr = 66 + 13.7 * weight + 5 * height - 6.8 * age;
+  }
+  var tdee = Math.round(bmr * activity);
+  var budget = Math.round(tdee + goal);
+
+  userProfile = {gender:gender, age:age, height:height, weight:weight, activity:activity, goal:goal, bmr:Math.round(bmr), tdee:tdee, budget:budget};
+  saveProfile();
+
+  var bmi = (weight / ((height/100) * (height/100))).toFixed(1);
+  var bmiLabel = bmi < 18.5 ? '偏瘦' : bmi < 24 ? '正常' : bmi < 28 ? '偏重' : '肥胖';
+
+  document.getElementById('profile-result').style.display = 'block';
+  document.getElementById('result-budget').textContent = budget;
+  document.getElementById('result-bmi').textContent = bmi + ' ('+bmiLabel+')';
+  document.getElementById('result-bmr').textContent = Math.round(bmr);
+  document.getElementById('result-tdee').textContent = tdee;
+
+  renderHome();
+  toast('热量预算已更新: '+budget+' kcal/天');
+}
+</script>
 </body>
 </html>
