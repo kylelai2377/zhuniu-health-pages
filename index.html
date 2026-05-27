@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>守护猪妞健康 — 项目汇报</title>
+<style>
+  :root {
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --card2: #f8fdfb;
+    --text: #2d3436;
+    --dim: #636e72;
+    --primary: #10ac84;
+    --primary-light: #55efc4;
+    --primary-dark: #0a8a6a;
+    --accent: #ff6b6b;
+    --accent-light: #ffa8a8;
+    --accent2: #fdcb6e;
+    --border: #dfe6e9;
+    --tag-bg: #f0f4f3;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ===== Scroll Animation ===== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 100px 20px 80px;
+    background: linear-gradient(160deg, #e6f8f2 0%, #f7f9fc 40%, #e8f6f3 70%);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(16,172,132,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: 3.6em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #10ac84, #55efc4, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .hero .subtitle {
+    font-size: 1.35em;
+    color: #3d5a4e;
+    font-style: italic;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .hero .tagline {
+    font-size: 1em;
+    color: var(--dim);
+    position: relative;
+  }
+  .hero .badges {
+    margin-top: 28px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .hero .badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.82em;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--tag-bg);
+    color: #555;
+  }
+  .badge.python    { color: #c9880a; border-color: #f0d060; }
+  .badge.ai        { color: #10ac84; border-color: #55efc4; }
+  .badge.health    { color: #ff6b6b; border-color: #ffa8a8; }
+  .badge.mit       { color: #6c5ce7; border-color: #c4b5fd; }
+
+  /* Layout */
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  section {
+    padding: 60px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-of-type { border-bottom: none; }
+
+  h2 {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #1a2e24;
+  }
+  h2 .num {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.55em;
+    width: 32px; height: 32px;
+    line-height: 32px;
+    text-align: center;
+    border-radius: 8px;
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+  .section-desc {
+    color: var(--dim);
+    margin-bottom: 32px;
+    font-size: 1.05em;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .card h3 { font-size: 1.25em; margin-bottom: 12px; color: #1a2e24; }
+  .card p, .card li { color: #3a4a42; }
+  .card li { margin-bottom: 6px; }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .card-grid3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* Steps */
+  .steps { list-style: none; }
+  .steps li {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 28px;
+    align-items: flex-start;
+  }
+  .steps .step-num {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .steps .step-content h4 { font-size: 1.1em; margin-bottom: 6px; color: #1a2e24; }
+  .steps .step-content p  { color: #3a4a42; font-size: 0.95em; line-height: 1.75; }
+
+  /* Architecture */
+  .arch {
+    background: var(--card2);
+    border-radius: 14px;
+    padding: 32px;
+    text-align: center;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+  .arch-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 28px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  }
+  .arch-box.label-a { border-color: var(--accent); border-left: 4px solid var(--accent); }
+  .arch-box.label-b { border-color: var(--primary); border-left: 4px solid var(--primary); }
+  .arch-box.label-c { border-color: var(--accent2); border-left: 4px solid var(--accent2); }
+  .arch-box h4 { font-size: 1em; margin-bottom: 4px; color: #1a2e24; }
+  .arch-box p  { font-size: 0.82em; color: var(--dim); }
+  .arch-arrow { font-size: 1.6em; color: #aaa; }
+
+  /* Tags */
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .tag {
+    padding: 4px 14px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: #4a5a52;
+  }
+  .tag.highlight { background: #10ac8412; border-color: #10ac8440; color: #10ac84; }
+
+  /* Chat Demo */
+  .chat-demo {
+    background: #f8fdfb;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .chat-msg {
+    padding: 16px 20px;
+    display: flex;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .chat-msg:last-child { border-bottom: none; }
+  .chat-msg.user { background: #f8faf9; }
+  .chat-msg.bot  { background: #f0f8f5; }
+  .chat-role {
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 0.9em;
+    min-width: 80px;
+  }
+  .chat-role.user-label { color: #636e72; }
+  .chat-role.bot-label  { color: #10ac84; }
+  .chat-text { color: #3a4a42; font-size: 0.95em; white-space: pre-wrap; }
+
+  /* Code Block */
+  .code-block {
+    background: #f0f4f3;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+    font-size: 0.85em;
+    color: #3a4a42;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  .code-block .cmd { color: #10ac84; }
+  .code-block .path { color: #c9880a; }
+  .code-block .comment { color: #aaa; }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.93em;
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--dim);
+    font-weight: 600;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td { color: #3a4a42; }
+  tr:hover td { background: #f8fdfb; }
+
+  /* Scenario Cards */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  }
+  .scenario .icon { font-size: 1.6em; margin-bottom: 8px; }
+  .scenario h4 { color: #1a2e24; margin-bottom: 6px; }
+  .scenario p  { color: #4a5a52; font-size: 0.93em; }
+  .scenario .insight {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: #f0f8f5;
+    border-left: 3px solid var(--primary);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9em;
+    color: var(--dim);
+  }
+
+  /* Data Source Cards */
+  .datasource-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .datasource-card .ds-icon {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+  }
+  .ds-icon.star3 { background: #10ac8412; }
+  .ds-icon.star2 { background: #ffa8a812; }
+  .ds-icon.star1 { background: #fdcb6e12; }
+  .datasource-card .ds-body h4 { font-size: 1.05em; color: #1a2e24; margin-bottom: 4px; }
+  .datasource-card .ds-body .ds-meta { font-size: 0.85em; color: var(--dim); margin-bottom: 6px; }
+  .datasource-card .ds-body p { font-size: 0.93em; color: #4a5a52; }
+
+  /* Icon Grid */
+  .icon-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .icon-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .icon-card .ic-icon {
+    flex-shrink: 0;
+    font-size: 1.8em;
+  }
+  .icon-card h4 { font-size: 1em; color: #1a2e24; margin-bottom: 4px; }
+  .icon-card p  { font-size: 0.88em; color: #4a5a52; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--dim);
+    font-size: 0.88em;
+  }
+  footer a { color: var(--primary); text-decoration: none; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 2.4em; }
+    .card-grid, .card-grid3, .icon-grid { grid-template-columns: 1fr; }
+    .arch-flow { flex-direction: column; }
+    .datasource-card { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <h1>守护猪妞健康</h1>
+  <p class="subtitle">"守护她的健康，就是守护这个家"</p>
+  <p class="tagline">一个专为猪妞打造的 AI 健康守护系统 —— 从日常监测到疾病预警，360 度守护她的每一天</p>
+  <div class="badges">
+    <span class="badge python">Python 3.10+</span>
+    <span class="badge ai">Claude API + RAG</span>
+    <span class="badge health">健康医疗</span>
+    <span class="badge mit">MIT License</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ============ 1. BACKGROUND ============ -->
+<section class="reveal">
+  <h2><span class="num">1</span> 项目背景</h2>
+  <p class="section-desc">健康管理这件事，为什么大多数人都在"假装努力"？</p>
+
+  <div class="card reveal">
+    <h3>当代人的健康困境</h3>
+    <div class="icon-grid" style="margin-top:16px">
+      <div class="icon-card">
+        <span class="ic-icon">📱</span>
+        <div>
+          <h4>信息过载，真假难辨</h4>
+          <p>小红书说喝芹菜汁排毒，抖音说空腹喝咖啡伤胃，微信养生号说每天必须喝八杯水——到底该听谁的？搜索引擎给出的答案常常互相矛盾。</p>
+        </div>
+      </div>
+      <div class="icon-card">
+        <span class="ic-icon">📋</span>
+        <div>
+          <h4>体检报告看不懂</h4>
+          <p>拿到体检报告，密密麻麻的箭头和数字，除了"建议复查"四个字，完全不知道问题严重不严重、该怎么调整。</p>
+        </div>
+      </div>
+      <div class="icon-card">
+        <span class="ic-icon">🍽️</span>
+        <div>
+          <h4>饮食方案千篇一律</h4>
+          <p>网上的减脂食谱、控糖餐单都是给"平均人"设计的——不考虑你的口味偏好、过敏原、生活方式，坚持三天就放弃。</p>
+        </div>
+      </div>
+      <div class="icon-card">
+        <span class="ic-icon">🏃</span>
+        <div>
+          <h4>运动计划难以坚持</h4>
+          <p>办了健身卡只去了三次，Keep 下载了从没打开。不是意志力不行，而是那些计划不是为你量身定做的。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card reveal">
+    <h3>为什么是现在？</h3>
+    <p>
+      大语言模型（LLM）的推理能力和多模态理解能力在过去两年取得了质的飞跃。
+      结合检索增强生成（RAG）技术，AI 可以基于权威医学知识库进行推理，同时理解你的个人健康数据，<strong>提供真正个性化的健康建议</strong>。
+      守护猪妞健康 正是在这个技术节点上的一次实践：不再依赖碎片化的养生信息，而是用 AI 为猪妞构建一个<strong>专属的、持续运转的健康守护系统</strong>。
+    </p>
+  </div>
+</section>
+
+<!-- ============ 2. INTRODUCTION ============ -->
+<section>
+  <h2><span class="num">2</span> 项目介绍</h2>
+  <p class="section-desc">五大核心模块，构建你的专属 AI 健康顾问</p>
+
+  <div class="card-grid3 reveal">
+    <div class="card">
+      <h3 style="color:#10ac84">🔍 智能症状分析</h3>
+      <p>用户用自然语言描述不适，AI 结合医学知识库进行多轮对话问询，给出症状的<strong>可能原因、严重程度评估、就医建议</strong>和<strong>自我调理方案</strong>。</p>
+    </div>
+    <div class="card">
+      <h3 style="color:#ff6b6b">🍽️ 个性化饮食方案</h3>
+      <p>基于身体状况、口味偏好、过敏原、宗教信仰等维度，生成<strong>每周定制餐单</strong>。不只是"少油少盐"，而是精确到每餐吃什么、怎么做。</p>
+    </div>
+    <div class="card">
+      <h3 style="color:#fdcb6e">🏃 运动处方定制</h3>
+      <p>输入体能水平、运动目标、可用时间、场地限制，AI 生成<strong>科学分阶的运动计划</strong>——从入门到进阶，每阶段都有明确指标。</p>
+    </div>
+  </div>
+
+  <div class="card-grid reveal" style="margin-top:0">
+    <div class="card">
+      <h3 style="color:#6c5ce7">📊 健康报告解读</h3>
+      <p>上传体检报告（PDF/图片），AI 提取关键指标、解释每项含义、标注异常项、给出<strong>分级行动建议</strong>——哪些需要立即就医，哪些调整生活方式就行。</p>
+    </div>
+    <div class="card">
+      <h3 style="color:#00b894">📈 生活习惯追踪</h3>
+      <p>记录每日睡眠、饮水、饮食、运动、情绪等维度的数据，AI 定期生成<strong>健康趋势报告</strong>，发现你的隐藏模式——比如"每次熬夜后第二天都会喝两杯咖啡"。</p>
+    </div>
+  </div>
+
+  <div class="arch reveal" style="margin-top:20px">
+    <h3>系统运作逻辑</h3>
+    <div class="arch-flow">
+      <div class="arch-box"><h4>用户输入</h4><p>症状描述 / 体检报告<br>饮食偏好 / 运动目标</p></div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-box label-b"><h4>RAG 医学知识库</h4><p>权威医学文献<br>临床指南 · 药物数据库</p></div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-box label-a"><h4>LLM 推理引擎</h4><p>症状关联分析<br>个性化方案生成</p></div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-box label-c"><h4>输出</h4><p>健康评估 + 饮食方案<br>运动处方 + 趋势报告</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. OPERATION GUIDE ============ -->
+<section>
+  <h2><span class="num">3</span> 操作指南</h2>
+  <p class="section-desc">从注册到获得个性化健康方案，只需 5 步</p>
+
+  <ol class="steps">
+    <li class="reveal">
+      <span class="step-num">1</span>
+      <div class="step-content">
+        <h4>创建健康档案（5 分钟）</h4>
+        <p>
+          填写基本信息：年龄、性别、身高、体重、既往病史、过敏原、服药情况。<br>
+          系统支持<strong>语音输入</strong>——不想打字？直接说就行。<br>
+          隐私保护：所有健康数据<strong>端到端加密</strong>存储，用户可随时导出或删除。
+        </p>
+      </div>
+    </li>
+    <li class="reveal">
+      <span class="step-num">2</span>
+      <div class="step-content">
+        <h4>设定健康目标</h4>
+        <p>
+          选择你的目标类型：<br>
+          <strong>减重塑形</strong>（目标体重、时间线）&nbsp;|&nbsp;
+          <strong>慢病管理</strong>（控糖、降压、降脂）&nbsp;|&nbsp;
+          <strong>体能提升</strong>（5K 跑步、增肌、柔韧性）&nbsp;|&nbsp;
+          <strong>综合调理</strong>（改善睡眠、减压、增强免疫）<br>
+          可以同时设定多个目标，AI 会自动协调方案之间的平衡。
+        </p>
+      </div>
+    </li>
+    <li class="reveal">
+      <span class="step-num">3</span>
+      <div class="step-content">
+        <h4>上传体检报告（可选但推荐）</h4>
+        <p>
+          支持<strong>PDF、JPG、PNG</strong> 格式，系统自动 OCR 识别关键指标（血常规、生化、尿常规等）。<br>
+          识别结果与医学标准值范围对比，异常项红色高亮，每项附带<strong>通俗解释</strong>和<strong>分级建议</strong>：<br>
+          🔴 红色警报 → 建议尽快就医&nbsp;&nbsp;|&nbsp;&nbsp;🟡 黄色预警 → 调整生活方式&nbsp;&nbsp;|&nbsp;&nbsp;🟢 绿色正常 → 继续保持
+        </p>
+      </div>
+    </li>
+    <li class="reveal">
+      <span class="step-num">4</span>
+      <div class="step-content">
+        <h4>AI 生成个性化方案</h4>
+        <p>
+          系统综合你的<strong>健康档案 + 体检数据 + 个人偏好 + 目标设定</strong>，调用 RAG 医学知识库进行推理，生成：<br>
+          · 每周定制餐单（含食材清单、烹饪步骤、热量和营养素标注）<br>
+          · 运动处方（分阶段安排，含动作视频链接和注意事项）<br>
+          · 生活习惯改善建议（睡眠卫生、压力管理等）<br>
+          所有方案均附带<strong>医学依据引用</strong>，让你清楚知道"为什么这样建议"。
+        </p>
+      </div>
+    </li>
+    <li class="reveal">
+      <span class="step-num">5</span>
+      <div class="step-content">
+        <h4>每日追踪 + 动态调整</h4>
+        <p>
+          每天花 <strong>2 分钟</strong>记录关键数据（体重、饮食、运动、睡眠、情绪），AI 每周生成趋势报告。<br>
+          偏离目标时自动预警——"你本周蔬菜摄入量下降了 30%，要不要试试这几道快手菜？"<br>
+          支持<strong>随时对话调整</strong>：不想吃今天的食谱 → "帮我把晚餐换成一个不用开火的方案，15 分钟内能搞定"。
+        </p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<!-- ============ 4. DATA SOURCES ============ -->
+<section>
+  <h2><span class="num">4</span> 需要的用户数据</h2>
+  <p class="section-desc">数据越完整，方案越精准 —— 但即使只有基本信息，也能开始使用</p>
+
+  <div class="datasource-card reveal">
+    <div class="ds-icon star3">🧬</div>
+    <div class="ds-body">
+      <h4>基础健康信息</h4>
+      <p class="ds-meta">必填 &nbsp;|&nbsp; 隐私等级：高</p>
+      <p>年龄、性别、身高、体重、既往病史、过敏药物/食物、家族病史。这些是生成任何健康方案的基础坐标系。系统采用字段级加密，不同信息可设置不同隐私级别。</p>
+    </div>
+  </div>
+
+  <div class="datasource-card reveal">
+    <div class="ds-icon star3">📄</div>
+    <div class="ds-body">
+      <h4>体检报告</h4>
+      <p class="ds-meta">强烈推荐 &nbsp;|&nbsp; 格式：PDF / JPG / PNG</p>
+      <p>体检报告是了解身体状态的"金标准"。OCR 自动提取血常规、生化全项、尿常规、甲功、肿瘤标志物等关键指标，与临床标准值对比，生成分级预警。上传越多历史报告，趋势分析越准。</p>
+    </div>
+  </div>
+
+  <div class="datasource-card reveal">
+    <div class="ds-icon star3">📝</div>
+    <div class="ds-body">
+      <h4>生活习惯问卷</h4>
+      <p class="ds-meta">推荐 &nbsp;|&nbsp; 约 15 分钟</p>
+      <p>一份精心设计的问卷覆盖：作息规律、饮食偏好（含 50+ 种常见食物偏好打分）、运动习惯、饮酒/吸烟情况、压力水平、睡眠质量、排便习惯等。每个维度只需回答 3-5 道选择题。</p>
+    </div>
+  </div>
+
+  <div class="datasource-card reveal">
+    <div class="ds-icon star2">🍎</div>
+    <div class="ds-body">
+      <h4>饮食照片记录</h4>
+      <p class="ds-meta">可选 &nbsp;|&nbsp; 拍照上传</p>
+      <p>拍一张照片，AI 识别食物种类并估算分量和营养素。相比手动录入，拍照记录的用户坚持率高出 3 倍。支持连续记录——AI 能从你的每一餐中学习你的真实饮食习惯。</p>
+    </div>
+  </div>
+
+  <div class="datasource-card reveal">
+    <div class="ds-icon star1">⌚</div>
+    <div class="ds-body">
+      <h4>可穿戴设备数据</h4>
+      <p class="ds-meta">可选 &nbsp;|&nbsp; 支持 Apple Health / Google Fit / 小米 / 华为</p>
+      <p>同步智能手表/手环的步数、心率、睡眠、血氧、运动记录，免去手动输入。原始数据经 AI 分析后提炼为有意义的洞察——不是告诉你"昨天走了 8000 步"，而是告诉你"你工作日步数偏低，建议午饭后散步 10 分钟"。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. 核心功能深化 ============ -->
+<section>
+  <h2><span class="num">5</span> 核心功能深解</h2>
+  <p class="section-desc">每个模块背后的技术逻辑和用户体验设计</p>
+
+  <div class="card-grid reveal">
+    <div class="card">
+      <h3 style="color:#10ac84">症状分析引擎</h3>
+      <p style="margin-bottom:12px">不只是"头痛可能是感冒"这种泛泛之谈：</p>
+      <ul>
+        <li><strong>多轮对话问诊</strong> —— 模拟医生问诊逻辑，逐步缩小可能性范围</li>
+        <li><strong>鉴别诊断</strong> —— 列出可能的诊断及其概率，标注危险信号</li>
+        <li><strong>分级建议</strong> —— "建议 24 小时内就医" vs "在家观察 3 天，若无好转再就医"</li>
+        <li><strong>就医准备</strong> —— 告诉你去医院要挂什么科、带什么材料、问医生什么问题</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="color:#ff6b6b">饮食方案生成器</h3>
+      <p style="margin-bottom:12px">在"营养科学"和"你愿意吃"之间找到交集：</p>
+      <ul>
+        <li><strong>口味建模</strong> —— 从你喜欢的 50+ 种食物中学习口味偏好向量</li>
+        <li><strong>约束求解</strong> —— 在热量目标、营养素比例、过敏原、口味偏好之间找最优解</li>
+        <li><strong>多样化策略</strong> —— 避免"连续三天都吃鸡胸肉西兰花"</li>
+        <li><strong>懒人模式</strong> —— 一键切换"不开火""15 分钟""外卖友好"等场景</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card-grid3 reveal" style="margin-top:0">
+    <div class="card">
+      <h3 style="color:#fdcb6e">运动处方</h3>
+      <p>FITT-VP 原则（频率、强度、时间、类型、总量、进阶），每个参数都根据你的体能基线测定结果设定。不是"每天跑 5 公里"这种一刀切。</p>
+    </div>
+    <div class="card">
+      <h3 style="color:#6c5ce7">报告解读</h3>
+      <p>对比 3 年内所有体检报告的同一指标变化趋势，发现"虽然还在正常范围但逐年上升"的早期预警信号。</p>
+    </div>
+    <div class="card">
+      <h3 style="color:#00b894">趋势洞察</h3>
+      <p>从日常记录中发现隐藏关联：熬夜 → 次日高热量饮食 → 内疚 → 报复性运动 → 受伤 → 暂停运动 → 体重回升。AI 帮你打破这个循环。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. SCENARIO DEMOS ============ -->
+<section>
+  <h2><span class="num">6</span> 应用场景演示</h2>
+  <p class="section-desc">三个典型用户场景，展示守护猪妞健康 的实际交互体验</p>
+
+  <div class="scenario reveal">
+    <div class="icon">🗣️</div>
+    <h4>场景一：身体不舒服，不确定要不要去医院</h4>
+    <div class="chat-demo" style="margin-top:12px">
+      <div class="chat-msg user">
+        <span class="chat-role user-label">用户</span>
+        <span class="chat-text">最近几天总觉得头晕，有时候站起来眼前发黑，今天早上差点摔倒。我是不是贫血了？</span>
+      </div>
+      <div class="chat-msg bot">
+        <span class="chat-role bot-label">猪妞守护</span>
+        <span class="chat-text">站起来时眼前发黑（体位性低血压）加上差点摔倒，这个情况需要重视。我先确认几个关键信息：
+
+1. 你最近有在节食或减肥吗？每天的饮食大概是什么样的？
+2. 有没有其他症状——心慌、耳鸣、面色苍白、月经量增多（如果是女性）？
+3. 你有测过血压和血糖吗？
+
+在了解这些之前，我先提醒你：<strong>今天先不要自己开车或骑车</strong>，避免突然晕倒。如果你现在感觉非常不适，建议直接去急诊。</span>
+      </div>
+      <div class="chat-msg user">
+        <span class="chat-role user-label">用户</span>
+        <span class="chat-text">没有节食但是最近加班多睡得少。心慌偶尔有，血压没测过。会是低血糖吗？</span>
+      </div>
+      <div class="chat-msg bot">
+        <span class="chat-role bot-label">猪妞守护</span>
+        <span class="chat-text">根据你说的情况，有几种可能性：
+
+<strong>可能性排序：</strong>
+1. 🟡 <strong>体位性低血压</strong>（可能性较高）—— 长期睡眠不足 + 可能的饮水不足导致血容量偏低
+2. 🟡 <strong>贫血</strong>（需要确认）—— 需要查血常规才能排除
+3. 🟡 <strong>低血糖</strong>（可能性较低）—— 低血糖通常还包括出冷汗、手抖，你没有提到
+
+<strong>我的建议：</strong>
+· 明天去社区医院查一个 <strong>血常规 + 空腹血糖 + 血压测量</strong>，这三项加起来大概 50 块钱
+· 在没有明确诊断前，<strong>起床和站起时放慢动作</strong>，先在床边坐 30 秒再站起来
+· 这几天保证每天喝足 1500ml 水，尽量保证 7 小时睡眠
+
+你可以把检查结果拍照发给我，我帮你解读。如果有任何加重的感觉，不要等，直接去医院。</span>
+      </div>
+    </div>
+    <div class="insight">
+      <strong>背后的技术：</strong>AI 没有直接跳到"贫血"的结论，而是通过多轮对话收集更多信息，进行鉴别诊断。分级建议明确了"社区医院查三项"而非"去三甲挂专家号"——避免不必要的医疗资源消耗。每条建议背后都有 RAG 检索到的临床指南作为依据。
+    </div>
+  </div>
+
+  <div class="scenario reveal">
+    <div class="icon">🍽️</div>
+    <h4>场景二：想吃好又想控糖，每天纠结吃什么</h4>
+    <div class="chat-demo" style="margin-top:12px">
+      <div class="chat-msg user">
+        <span class="chat-role user-label">用户</span>
+        <span class="chat-text">帮我安排下周的晚餐，我血糖偏高，不吃辣，讨厌香菜和芹菜，周一和周三晚上只有 20 分钟做饭时间。</span>
+      </div>
+      <div class="chat-msg bot">
+        <span class="chat-role bot-label">猪妞守护</span>
+        <span class="chat-text">好的，基于你的情况我已经生成了下周晚餐计划：
+
+<strong>周一（20分钟快速）🥒</strong>
+蒜蓉西蓝花 + 香煎鸡胸肉 + 杂粮饭
+→ 准备：西兰花提前洗净切好，鸡胸肉提前解冻
+→ 热量：420kcal | 碳水：45g | 蛋白质：35g
+→ 低 GI 组合，餐后血糖波动小
+
+<strong>周二（正常时间）🐟</strong>
+清蒸鲈鱼 + 凉拌木耳黄瓜 + 藜麦饭
+→ 清蒸做法几乎零油烟，鱼肉蛋白吸收率高达 96%
+→ 木耳膳食纤维丰富，有助于延缓糖分吸收
+
+<strong>周三（20分钟快速）🥬</strong>
+番茄豆腐汤 + 白灼虾 + 全麦馒头
+→ 番茄买罐装切块备好，虾仁提前解冻，15分钟就能上桌
+→ 热量：380kcal | 高蛋白、低碳水
+
+<strong>…（周四到周日已折叠，点击展开）</strong>
+
+需要我把食材清单按超市分区整理出来吗？</span>
+      </div>
+    </div>
+    <div class="insight">
+      <strong>背后的技术：</strong>方案不是简单的"低 GI 食物列表"，而是在热量、碳水、蛋白质、时间约束、口味禁忌五个维度之间求解。注意到周一和周三是"快速方案"——系统自动选择了预处理简单、烹饪时间短的食材组合。每道菜标注了热量和营养素，方便用户了解"为什么是这道菜"。
+    </div>
+  </div>
+
+  <div class="scenario reveal">
+    <div class="icon">📊</div>
+    <h4>场景三：体检报告一堆箭头，不知道从哪开始</h4>
+    <div class="chat-demo" style="margin-top:12px">
+      <div class="chat-msg user">
+        <span class="chat-role user-label">用户</span>
+        <span class="chat-text">[上传体检报告 PDF] 帮我看看有什么问题</span>
+      </div>
+      <div class="chat-msg bot">
+        <span class="chat-role bot-label">猪妞守护</span>
+        <span class="chat-text">已解析你的体检报告（2026年5月）。以下是摘要：
+
+<strong>🟢 正常指标（18项）：</strong>肝肾功能、电解质、甲功三项均在正常范围。
+
+<strong>🟡 需要关注（3项）：</strong>
+· <strong>空腹血糖：6.3 mmol/L</strong> ↑（正常 3.9-6.1）—— 处于糖尿病前期，好消息是：这个阶段通过生活方式干预，有较大概率逆转
+· <strong>低密度脂蛋白 LDL：3.8 mmol/L</strong> ↑（理想 < 2.6）—— 偏高，但还没有到用药标准
+· <strong>25-羟维生素D：18 ng/mL</strong> ↓（充足 > 30）—— 偏低，可能与你户外活动少有关
+
+<strong>🔴 需要就医（0项）：</strong>没有发现需要立即就医的指标。
+
+<strong>核心建议：</strong>
+1. 三个月后复查空腹血糖 + 糖化血红蛋白（HbA1c）
+2. 饮食调整重点：减少精制碳水（白米饭、面条），增加膳食纤维
+3. 每天补充维生素 D3 1000-2000 IU，配合每周至少 3 次户外活动
+4. LDL 偏高可通过减少饱和脂肪（肥肉、黄油、油炸食品）来改善
+
+我已经为你更新了饮食方案的碳水目标和运动处方。要现在看看吗？</span>
+      </div>
+    </div>
+    <div class="insight">
+      <strong>背后的技术：</strong>OCR 提取 + 医学知识库匹配 + 标准值对比，实现了体检报告的自动解读。关键设计在于"分级"——不是一股脑把所有异常都标红吓人，而是区分了"需要立即行动"和"可以慢慢调整"。空腹血糖 6.3 没有直接诊断为"糖尿病"，而是准确地标注为"糖尿病前期"并强调"可逆转"——这既符合临床指南，也避免不必要的焦虑。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. ARCHITECTURE ============ -->
+<section>
+  <h2><span class="num">7</span> 技术架构</h2>
+  <p class="section-desc">模块化设计，每个组件可独立升级和替换</p>
+
+  <h3 style="color:#1a2e24">项目结构</h3>
+  <div class="code-block reveal">
+<span class="comment">healthmate-ai/</span>
+<span class="path">├── frontend/</span>                <span class="comment"># Next.js 前端（TypeScript）</span>
+<span class="path">│   ├── app/</span>                  <span class="comment"># App Router 页面</span>
+<span class="path">│   ├── components/</span>           <span class="comment"># UI 组件库（聊天、图表、表单）</span>
+<span class="path">│   └── lib/</span>                  <span class="comment"># 前端工具函数</span>
+<span class="path">├── backend/</span>                 <span class="comment"># Python FastAPI 后端</span>
+<span class="path">│   ├── api/</span>                  <span class="comment"># REST API 路由</span>
+<span class="path">│   ├── services/</span>             <span class="comment"># 核心业务逻辑</span>
+<span class="path">│   │   ├── symptom_analyzer.py</span>   <span class="comment"># 症状分析引擎</span>
+<span class="path">│   │   ├── diet_planner.py</span>       <span class="comment"># 饮食方案求解器</span>
+<span class="path">│   │   ├── exercise_prescriber.py</span> <span class="comment"># 运动处方生成器</span>
+<span class="path">│   │   ├── report_parser.py</span>      <span class="comment"># 体检报告 OCR + 解析</span>
+<span class="path">│   │   └── trend_analyzer.py</span>      <span class="comment"># 趋势分析引擎</span>
+<span class="path">│   ├── rag/</span>                  <span class="comment"># RAG 检索增强生成</span>
+<span class="path">│   │   ├── embeddings.py</span>         <span class="comment"># 文档向量化</span>
+<span class="path">│   │   ├── retriever.py</span>          <span class="comment"># 知识库检索</span>
+<span class="path">│   │   └── medical_kb/</span>           <span class="comment"># 医学知识库（向量存储）</span>
+<span class="path">│   └── models/</span>               <span class="comment"># 数据模型</span>
+<span class="path">├── docs/</span>                    <span class="comment"># 产品文档</span>
+<span class="path">├── docker-compose.yml</span>        <span class="comment"># 容器化部署</span>
+<span class="path">└── README.md</span>
+  </div>
+
+  <h3 style="margin-top:32px; color:#1a2e24">技术选型</h3>
+  <table class="reveal">
+    <tr><th>层级</th><th>技术</th><th>选型理由</th></tr>
+    <tr><td>AI 推理</td><td>Claude API（主）+ GPT-4o（备）</td><td>Claude 在医学推理和多轮对话场景表现优秀，长上下文能力适合处理完整病历</td></tr>
+    <tr><td>RAG 框架</td><td>LangChain + ChromaDB</td><td>成熟稳定，向量检索 + BM25 混合检索提高医学文献召回率</td></tr>
+    <tr><td>知识库</td><td>PubMed + 临床指南 + 药物数据库</td><td>权威来源，定期更新，所有输出可追溯到原文</td></tr>
+    <tr><td>OCR</td><td>Tesseract + PaddleOCR</td><td>中文体检报告识别准确率高，支持复杂表格结构</td></tr>
+    <tr><td>后端</td><td>Python FastAPI</td><td>异步高性能，与 AI/数据科学生态无缝集成</td></tr>
+    <tr><td>前端</td><td>Next.js + Tailwind CSS</td><td>SSR 优化首屏加载，Tailwind 快速开发响应式界面</td></tr>
+    <tr><td>数据库</td><td>PostgreSQL + Redis</td><td>结构化健康数据 + 会话缓存</td></tr>
+    <tr><td>部署</td><td>Docker + GitHub Actions CI/CD</td><td>一键部署，自动化测试和发布</td></tr>
+  </table>
+</section>
+
+<!-- ============ 8. 设计哲学 ============ -->
+<section>
+  <h2><span class="num">8</span> 产品设计哲学</h2>
+  <p class="section-desc">在健康这个敏感领域，产品理念比技术更重要</p>
+
+  <div class="card-grid reveal">
+    <div class="card">
+      <h3 style="color:#10ac84">不替代医生，只做医生的"前置雷达"</h3>
+      <p>守护猪妞健康 的定位是<strong>健康管理工具</strong>，不是医疗诊断工具。它帮助你：在问题还小的时候发现它、在去看医生之前做好信息准备、在医生给出建议之后帮你落地执行。每次对话都会强调：如有紧急症状，请立即就医。</p>
+    </div>
+    <div class="card">
+      <h3 style="color:#ff6b6b">每一条建议都可溯源</h3>
+      <p>所有健康建议必须附带<strong>医学依据引用</strong>（文献 PMID 或临床指南编号）。用户点击即可查看原文摘要。不做"黑箱建议"——你不需要信任 AI，你需要信任它可以被验证。</p>
+    </div>
+    <div class="card">
+      <h3 style="color:#fdcb6e">隐私是基本权利，不是附加功能</h3>
+      <p>健康数据是所有个人数据中最敏感的。守护猪妞健康 采用<strong>端到端加密 + 字段级权限控制</strong>。用户可以精确控制：哪些数据可以用于 AI 分析、哪些数据仅本地存储、哪些数据根本不上传。所有数据可随时导出（JSON 格式）或彻底删除。</p>
+    </div>
+    <div class="card">
+      <h3 style="color:#6c5ce7">降低门槛比增加功能更重要</h3>
+      <p>健康管理最大的障碍不是"不知道怎么做"，而是"做不到"。所以守护猪妞健康 的设计原则是：<strong>输入越少越好、方案越具体越好、反馈越即时越好</strong>。拍照比打字快、选择题比填空题快、说一句话比打开 App 快。</p>
+    </div>
+  </div>
+
+  <div class="card reveal" style="margin-top:20px; text-align:center; background:linear-gradient(135deg, #e6f8f2, #f7f9fc); border-color:#10ac8440">
+    <p style="font-size:1.15em; font-style:italic; color:#10ac84; margin:0">
+      "最好的健康管理方案，不是写在论文里最科学的那个，<br>
+      而是你真正愿意每天去做的那个。"<br>
+      <span style="font-size:0.85em; color:var(--dim)">—— 守护猪妞健康 产品团队</span>
+    </p>
+  </div>
+</section>
+
+<!-- ============ 9. QUICK START ============ -->
+<section>
+  <h2><span class="num">9</span> 快速开始</h2>
+  <p class="section-desc">从零到拥有你的专属 AI 健康顾问</p>
+
+  <div class="card-grid reveal">
+    <div class="card">
+      <h3>立即体验</h3>
+      <div class="code-block" style="margin-top:12px">
+<span class="comment"># 1. 克隆项目</span>
+<span class="cmd">git clone</span> https://github.com/yourteam/healthmate-ai
+<span class="cmd">cd</span> healthmate-ai
+
+<span class="comment"># 2. 启动服务（需要 Docker）</span>
+<span class="cmd">docker-compose up -d</span>
+
+<span class="comment"># 3. 打开浏览器</span>
+<span class="comment"># 访问 http://localhost:3000</span>
+
+<span class="comment"># 4. 创建你的健康档案</span>
+<span class="comment"># 按照引导填写基本信息，5 分钟即可开始使用</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>推荐的使用节奏</h3>
+      <ul>
+        <li><strong>第 1 周：</strong>完成健康档案 + 上传最近一次体检报告，让 AI 建立你的健康基线</li>
+        <li><strong>第 2-4 周：</strong>执行 AI 生成的饮食和运动方案，每天花 2 分钟打卡</li>
+        <li><strong>第 1 个月末：</strong>查看第一份月度健康趋势报告，调整方案</li>
+        <li><strong>第 3 个月：</strong>复查关键指标，看到实际变化</li>
+        <li><strong>长期：</strong>建立健康数据资产，真正实现"健康可管理"</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. SUMMARY ============ -->
+<section>
+  <h2><span class="num">10</span> 总结</h2>
+
+  <div class="card-grid reveal">
+    <div class="card">
+      <h3>一句话概括</h3>
+      <p style="font-size:1.1em;">守护猪妞健康 是一个基于大语言模型和医学知识库的 AI 健康守护系统，它整合猪妞的体检报告、生活习惯、饮食偏好和健康目标，生成真正能落地的健康守护方案。不是泛泛而谈的养生科普，而是专属于她的、持续运转的健康管家。</p>
+    </div>
+    <div class="card">
+      <h3>核心价值</h3>
+      <ul>
+        <li><strong>个性化</strong> —— 不是"每天喝八杯水"，而是针对你的体质和生活的精准方案</li>
+        <li><strong>可溯源</strong> —— 每条建议附带医学依据，不是AI 的"感觉"</li>
+        <li><strong>能落地</strong> —— 方案具体到每餐吃什么、每项运动怎么做</li>
+        <li><strong>隐私优先</strong> —— 端到端加密 + 字段级权限控制</li>
+        <li><strong>动态调整</strong> —— 根据执行反馈和身体变化持续优化</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card reveal" style="margin-top:20px; text-align:center; background:linear-gradient(135deg, #e6f8f2, #f7f9fc); border-color:#10ac8440">
+    <p style="font-size:1.3em; font-weight:700; color:#1a2e24; margin:0">
+      最好的医生是自己的身体，<br>
+      <span style="color:#10ac84">最好的健康管理是每天都做得到的小事。</span>
+    </p>
+    <p style="color:var(--dim); margin-top:12px">
+      MIT License · <a href="https://github.com/yourteam/healthmate-ai" style="color:#10ac84">GitHub</a> · 健康热线：如有紧急症状请立即就医，不要依赖 AI
+    </p>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  Generated for course project presentation · 守护猪妞健康 &copy; 2026<br>
+  <span style="font-size:0.85em">本项目为课程作业展示，不构成医疗建议。如有健康问题，请咨询专业医生。</span>
+</footer>
+
+<!-- ============ Scroll Animation Script ============ -->
+<script>
+(function() {
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal').forEach(function(el) {
+    observer.observe(el);
+  });
+})();
+</script>
+
+</body>
+</html>
