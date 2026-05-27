@@ -138,6 +138,14 @@ body {
 .quick-ask:active { background: var(--pink-light); border-color: var(--pink); }
 .quick-ask.highlight { background: var(--pink-bg); border-color: var(--pink); color: var(--pink); font-weight: 600; }
 
+.cam-btn { width: 42px; height: 42px; min-width: 42px; border-radius: 50%; background: #fff; color: var(--pink); border: 2px solid var(--pink); font-size: 1.3em; cursor: pointer; flex-shrink: 0; touch-action: manipulation; display: flex; align-items: center; justify-content: center; }
+.cam-btn:active { background: var(--pink-light); }
+.cam-btn.loading { opacity: 0.6; pointer-events: none; }
+.photo-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 300; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-size: 1em; }
+.photo-overlay.show { display: flex; }
+.photo-spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .exercise-tabs { display: flex; gap: 0; margin-bottom: 14px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
 .exercise-tab { flex: 1; text-align: center; padding: 12px; font-size: 0.85em; font-weight: 600; cursor: pointer; background: #fff; border: none; color: #888; touch-action: manipulation; }
 .exercise-tab:active { background: #fef0f2; }
@@ -330,8 +338,11 @@ body {
   </div>
   <div class="chat-input-row">
     <input type="text" id="chat-input" placeholder="说说吃了什么，或问我任何问题..." onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="cam-btn" id="cam-btn" onclick="document.getElementById('photo-input').click()" title="拍照识别食物">📷</button>
+    <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(event)">
     <button onclick="sendMsg()">➤</button>
   </div>
+  <div class="photo-overlay" id="photo-overlay"><div class="photo-spinner"></div>AI正在看你的食物照片... 🔍</div>
   <div class="quick-asks" id="quick-asks">
     <span class="quick-ask highlight" onclick="quickAsk('早餐吃了一碗粥、一个煮鸡蛋、半根玉米')">🤖 AI记餐试试</span>
     <span class="quick-ask" onclick="quickAsk('今天吃什么不容易胖？')">今天吃什么</span>
@@ -1433,6 +1444,104 @@ function parseMealDescription(text) {
   }
 
   return {results: results, unmatched: unmatched};
+}
+
+// ==================== AI CHAT ====================
+function sendMsg() {
+  var input = document.getElementById('chat-input');
+  if (!input) return;
+
+// ==================== PHOTO ANALYSIS ====================
+var PHOTO_API = 'http://localhost:8765';
+
+function onPhotoSelected(e) {
+  var file = e.target.files && e.target.files[0];
+  if (!file) return;
+  e.target.value = ''; // Reset so same file can be re-selected
+
+  // Show loading
+  var overlay = document.getElementById('photo-overlay');
+  if (overlay) overlay.classList.add('show');
+
+  // Read file as base64 and send
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var blob = dataURLtoBlob(ev.target.result);
+    sendToBackend(blob, file.name || 'photo.jpg');
+  };
+  reader.onerror = function() {
+    if (overlay) overlay.classList.remove('show');
+    toast('读取图片失败');
+  };
+  reader.readAsDataURL(file);
+}
+
+function dataURLtoBlob(dataurl) {
+  var arr = dataurl.split(',');
+  var mime = arr[0].match(/:(.*?);/)[1];
+  var bstr = atob(arr[1]);
+  var n = bstr.length;
+  var u8arr = new Uint8Array(n);
+  for (var i = 0; i < n; i++) { u8arr[i] = bstr.charCodeAt(i); }
+  return new Blob([u8arr], {type: mime});
+}
+
+function sendToBackend(blob, filename) {
+  var formData = new FormData();
+  formData.append('file', blob, filename);
+
+  fetch(PHOTO_API + '/api/analyze-food', {method: 'POST', body: formData})
+    .then(function(r) {
+      if (!r.ok) {
+        if (r.status === 503) throw new Error('API_KEY_NOT_SET');
+        return r.json().then(function(d) { throw new Error(d.detail || 'server error'); });
+      }
+      return r.json();
+    })
+    .then(function(result) { displayPhotoResult(result); })
+    .catch(function(err) {
+      var overlay = document.getElementById('photo-overlay');
+      if (overlay) overlay.classList.remove('show');
+      if (err.message === 'Failed to fetch' || err.message === 'API_KEY_NOT_SET') {
+        appendChat('bot', '📷 拍照功能需要连接后端服务。\n\n请确认：\n1. 电脑上已运行 <b>python backend.py</b>\n2. 已设置 <b>ANTHROPIC_API_KEY</b> 环境变量\n3. 手机和电脑在同一个WiFi下\n4. 访问网址改为电脑IP（如 http://192.168.x.x:8765）');
+      } else {
+        appendChat('bot', '😅 分析照片时出错了：' + err.message);
+      }
+    });
+}
+
+function displayPhotoResult(result) {
+  var overlay = document.getElementById('photo-overlay');
+  if (overlay) overlay.classList.remove('show');
+
+  if (!result.items || result.items.length === 0) {
+    appendChat('bot', '😅 没识别出照片里的食物，你可以试试用文字描述一下~');
+    return;
+  }
+
+  var reply = '📷 我认出了这些食物：\n\n';
+  for (var r = 0; r < result.items.length; r++) {
+    var item = result.items[r];
+    reply += '· <b>' + item.name + '</b>，约 ' + item.grams + 'g → <b>' + item.kcal + ' kcal</b>\n  (蛋白 ' + (item.protein || 0) + 'g · 碳水 ' + (item.carbs || 0) + 'g · 脂肪 ' + (item.fat || 0) + 'g)\n';
+  }
+  reply += '\n📊 总计约 <b>' + result.total_kcal + ' kcal</b>';
+  if (result.note) reply += '\n\n💡 ' + result.note;
+
+  // Build items in same format as parseMealDescription for add buttons
+  var items = [];
+  for (var r = 0; r < result.items.length; r++) {
+    items.push({
+      food: {n: result.items[r].name, cal: result.items[r].kcal, p: result.items[r].protein || 0, c: result.items[r].carbs || 0, f: result.items[r].fat || 0, cat: '拍照识别', alias: [], estimated: true},
+      grams: result.items[r].grams || 100,
+      kcal: result.items[r].kcal,
+      estimated: true
+    });
+  }
+
+  var hour = new Date().getHours();
+  var suggestedMeal = hour < 10 ? 'breakfast' : (hour < 15 ? 'lunch' : 'dinner');
+  reply += '\n\n要加到今天的记录里吗？';
+  appendChat('bot', reply, {action: 'add_meal', items: items, suggestedMeal: suggestedMeal});
 }
 
 // ==================== AI CHAT ====================
