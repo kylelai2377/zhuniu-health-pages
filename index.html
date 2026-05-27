@@ -143,8 +143,8 @@ body {
 .cam-btn.loading { opacity: 0.6; pointer-events: none; }
 .photo-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 300; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-size: 1em; }
 .photo-overlay.show { display: flex; }
-.photo-spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.photo-spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; margin-bottom: 16px; }
+.photo-overlay.show .photo-spinner { border-top-color: #ccc; }
 
 .exercise-tabs { display: flex; gap: 0; margin-bottom: 14px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
 .exercise-tab { flex: 1; text-align: center; padding: 12px; font-size: 0.85em; font-weight: 600; cursor: pointer; background: #fff; border: none; color: #888; touch-action: manipulation; }
@@ -339,7 +339,7 @@ body {
   <div class="chat-input-row">
     <input type="text" id="chat-input" placeholder="说说吃了什么，或问我任何问题..." onkeydown="if(event.key==='Enter')sendMsg()">
     <button class="cam-btn" id="cam-btn" onclick="document.getElementById('photo-input').click()" title="拍照识别食物">📷</button>
-    <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(event)">
+    <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="onPhotoSelected(event)">
     <button onclick="sendMsg()">➤</button>
   </div>
   <div class="photo-overlay" id="photo-overlay"><div class="photo-spinner"></div>AI正在看你的食物照片... 🔍</div>
@@ -1446,24 +1446,17 @@ function parseMealDescription(text) {
   return {results: results, unmatched: unmatched};
 }
 
-// ==================== AI CHAT ====================
-function sendMsg() {
-  var input = document.getElementById('chat-input');
-  if (!input) return;
-
 // ==================== PHOTO ANALYSIS ====================
 var PHOTO_API = 'http://localhost:8765';
 
 function onPhotoSelected(e) {
   var file = e.target.files && e.target.files[0];
   if (!file) return;
-  e.target.value = ''; // Reset so same file can be re-selected
+  e.target.value = '';
 
-  // Show loading
   var overlay = document.getElementById('photo-overlay');
   if (overlay) overlay.classList.add('show');
 
-  // Read file as base64 and send
   var reader = new FileReader();
   reader.onload = function(ev) {
     var blob = dataURLtoBlob(ev.target.result);
@@ -1527,7 +1520,6 @@ function displayPhotoResult(result) {
   reply += '\n📊 总计约 <b>' + result.total_kcal + ' kcal</b>';
   if (result.note) reply += '\n\n💡 ' + result.note;
 
-  // Build items in same format as parseMealDescription for add buttons
   var items = [];
   for (var r = 0; r < result.items.length; r++) {
     items.push({
