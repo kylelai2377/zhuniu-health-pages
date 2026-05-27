@@ -462,6 +462,7 @@ var FOOD_DB = [
   {n:"凉皮",cal:130,p:4,c:24,f:2,cat:"主食",alias:["擀面皮"]},
   {n:"肉夹馍",cal:230,p:10,c:30,f:8,cat:"主食",alias:[]},
   {n:"煎饼果子",cal:195,p:8,c:28,f:6,cat:"主食",alias:["煎饼"]},
+  {n:"玉米肉饼",cal:210,p:10,c:22,f:10,cat:"中式菜",alias:["玉米肉饼","玉米猪肉饼"]},
   {n:"手抓饼",cal:300,p:6,c:35,f:16,cat:"主食",alias:[]},
   {n:"鸡蛋灌饼",cal:220,p:8,c:30,f:8,cat:"主食",alias:[]},
   {n:"螺蛳粉",cal:250,p:8,c:35,f:10,cat:"主食",alias:[]},
@@ -1106,17 +1107,27 @@ function renderFoodList() {
     var f = list[i];
     html += '<div class="food-item" onclick="openPortionModal(\'' + f.n.replace(/'/g, "\\'") + '\')"><div><div class="food-name">' + f.n + '</div><div class="food-macro">蛋白' + f.p + 'g · 碳水' + f.c + 'g · 脂肪' + f.f + 'g</div></div><div class="food-cal">' + f.cal + ' kcal</div></div>';
   }
-  if (!html) html = '<div style="text-align:center;color:#aaa;padding:40px;">没找到，试试去AI助手用日常语言描述你吃了什么~</div>';
+  if (!html) {
+    // Try estimation for the search query
+    if (q && q.length >= 2) {
+      var est = estimateUnknownFood(q);
+      if (est) {
+        html = '<div class="food-item" onclick="addEstimatedFood(\'' + est.n.replace(/'/g, "\\'") + '\',' + est.cal + ',' + est.p + ',' + est.c + ',' + est.f + ')"><div><div class="food-name">' + est.n + ' <span style="color:#f0a060;font-size:0.75em;">(估测)</span></div><div class="food-macro">蛋白' + est.p + 'g · 碳水' + est.c + 'g · 脂肪' + est.f + 'g</div></div><div class="food-cal">~' + est.cal + ' kcal</div></div>';
+      }
+    }
+    if (!html) html = '<div style="text-align:center;color:#aaa;padding:40px;">没找到，试试去AI助手用日常语言描述你吃了什么~</div>';
+  }
   listEl.innerHTML = html;
 }
 
-function openPortionModal(foodName) {
-  currentFood = findFoodByName(foodName);
+function openPortionModal(foodName, foodObj) {
+  currentFood = foodObj || findFoodByName(foodName);
   if (!currentFood) return;
 
   var el;
-  el = document.getElementById('pm-food-name'); if (el) el.textContent = currentFood.n;
-  el = document.getElementById('pm-cal-info'); if (el) el.textContent = '每100g: ' + currentFood.cal + ' kcal | 蛋白' + currentFood.p + 'g | 碳水' + currentFood.c + 'g | 脂肪' + currentFood.f + 'g';
+  var estMark = currentFood.estimated ? '~' : '';
+  el = document.getElementById('pm-food-name'); if (el) el.textContent = currentFood.n + (currentFood.estimated ? ' (估测)' : '');
+  el = document.getElementById('pm-cal-info'); if (el) el.textContent = '每100g: ' + estMark + currentFood.cal + ' kcal | 蛋白' + estMark + currentFood.p + 'g | 碳水' + estMark + currentFood.c + 'g | 脂肪' + estMark + currentFood.f + 'g';
 
   var ps = [{label:'半份',g:50},{label:'一份',g:100},{label:'一份半',g:150},{label:'两份',g:200},{label:'半斤',g:250},{label:'一斤',g:500}];
   var portionsHtml = '';
@@ -1143,9 +1154,14 @@ function renderMealPicker() {
   if (el) el.innerHTML = html;
 }
 
+function addEstimatedFood(name, cal, p, c, f) {
+  var food = {n: name, cal: cal, p: p, c: c, f: f, cat: '估测', alias: [], estimated: true};
+  openPortionModal(name, food);
+}
+
 function addPortion(grams, kcal) {
   if (!todayMeals[selectedMeal]) todayMeals[selectedMeal] = [];
-  todayMeals[selectedMeal].push({name: currentFood.n, grams: grams, kcal: kcal});
+  todayMeals[selectedMeal].push({name: currentFood.n, grams: grams, kcal: kcal, estimated: !!currentFood.estimated});
   saveToday();
   closePortionModal();
   var mealNames = {breakfast:'早餐',lunch:'午餐',dinner:'晚餐',snack:'加餐'};
@@ -1225,6 +1241,95 @@ function fuzzyFindFood(text) {
   return best;
 }
 
+// ==================== SMART CALORIE ESTIMATION ====================
+var ESTIMATE_RULES = [
+  // High-fat meat combos
+  {kw:['炸猪排','炸鸡排','炸鸡腿','炸鸡翅','炸鸡','炸肉','炸排'],cal:290,p:15,c:18,f:18},
+  {kw:['炸','煎'],cal:240,p:14,c:18,f:13},
+  // Meat heavy dishes
+  {kw:['扣肉','红烧肉','东坡肉','五花肉','回锅肉'],cal:350,p:14,c:6,f:30},
+  {kw:['排骨','糖醋','红烧'],cal:220,p:15,c:12,f:14},
+  {kw:['肉饼','肉丸','肉圆','肉卷','肉肠'],cal:210,p:11,c:16,f:12},
+  {kw:['猪肉','猪','肉末','肉沫','肉片','肉丝','瘦肉','肉丁'],cal:200,p:17,c:5,f:13},
+  {kw:['牛肉','牛腩','牛柳','肥牛'],cal:180,p:20,c:3,f:10},
+  {kw:['羊肉','羊排','羊'],cal:210,p:19,c:2,f:14},
+  {kw:['鸡肉','鸡腿','鸡胸','鸡丁','鸡块','鸡片','鸡柳','宫保','辣子鸡','口水鸡'],cal:170,p:20,c:5,f:8},
+  {kw:['鸭肉','鸭','烤鸭','烧鸭'],cal:240,p:15,c:5,f:18},
+  {kw:['肉','荤'],cal:200,p:16,c:5,f:14},
+  // Seafood
+  {kw:['虾','虾仁','虾滑','虾球'],cal:90,p:18,c:2,f:1},
+  {kw:['鱼片','鱼肉','鱼块','蒸鱼','红烧鱼','烤鱼','水煮鱼','酸菜鱼'],cal:120,p:18,c:3,f:4},
+  {kw:['鱼','海鲜','蟹','贝','蚌'],cal:110,p:17,c:3,f:3},
+  // Egg & tofu
+  {kw:['蛋羹','蒸蛋','鸡蛋羹','炖蛋'],cal:70,p:5,c:2,f:4},
+  {kw:['炒蛋','煎蛋','蛋饼'],cal:180,p:9,c:3,f:14},
+  {kw:['蛋','鸡蛋'],cal:150,p:10,c:3,f:10},
+  {kw:['豆腐','豆干','豆皮','千张','腐竹'],cal:100,p:10,c:4,f:5},
+  // Staple/carbs
+  {kw:['饼','馍','馕','火烧'],cal:230,p:8,c:35,f:8},
+  {kw:['面包','吐司'],cal:280,p:9,c:48,f:7},
+  {kw:['蛋糕','慕斯','布丁','甜点','点心','酥','派','塔'],cal:320,p:6,c:40,f:16},
+  {kw:['糕','点心'],cal:280,p:5,c:38,f:13},
+  {kw:['面','粉','米线','河粉','粿条'],cal:180,p:6,c:30,f:5},
+  {kw:['饭','米','粥','盖饭','炒饭','焗饭','烩饭','煲仔'],cal:190,p:6,c:32,f:5},
+  {kw:['包','饺','馄饨','抄手','烧卖','烧麦'],cal:220,p:9,c:28,f:8},
+  {kw:['馒头','花卷','窝头'],cal:210,p:7,c:43,f:1},
+  {kw:['粽子','糍粑','年糕','麻薯'],cal:200,p:4,c:38,f:4},
+  {kw:['粉皮','凉粉','冰粉','凉糕'],cal:80,p:1,c:18,f:0.3},
+  // Veggies
+  {kw:['炒菜','炒时蔬','炒蔬菜'],cal:80,p:3,c:6,f:5},
+  {kw:['沙拉','凉拌','拌菜'],cal:60,p:3,c:5,f:3},
+  {kw:['菜','蔬','菇','菌','瓜','茄','豆角','花菜','青菜','白菜','菠菜','空心菜','生菜'],cal:50,p:3,c:5,f:2},
+  {kw:['土豆','马铃薯','薯','芋头','山药','芋','薯条','薯片','薯角'],cal:120,p:2,c:27,f:1},
+  // Soup
+  {kw:['汤','羹'],cal:80,p:4,c:6,f:4},
+  // Sauce/condiment
+  {kw:['酱','沙拉酱','麻酱','辣酱'],cal:200,p:3,c:8,f:18},
+  {kw:['火锅','麻辣烫','冒菜','串串'],cal:180,p:10,c:10,f:12},
+  {kw:['麻辣拌','麻辣香锅','干锅'],cal:220,p:12,c:12,f:14},
+  // Drinks
+  {kw:['奶','乳','酸奶','牛奶','豆浆','豆奶'],cal:60,p:3,c:6,f:3},
+  {kw:['果汁','饮料','汽水','可乐','雪碧'],cal:42,p:0,c:10,f:0},
+  {kw:['茶','水','咖啡'],cal:5,p:0,c:1,f:0},
+  // Fallback
+  {kw:[],cal:180,p:8,c:20,f:8}
+];
+
+function estimateUnknownFood(text) {
+  if (!text || text.length < 2) return null;
+  text = text.trim();
+
+  for (var i = 0; i < ESTIMATE_RULES.length; i++) {
+    var rule = ESTIMATE_RULES[i];
+    for (var j = 0; j < rule.kw.length; j++) {
+      if (text.indexOf(rule.kw[j]) >= 0) {
+        return {
+          n: text,
+          cal: rule.cal,
+          p: rule.p,
+          c: rule.c,
+          f: rule.f,
+          cat: '估测',
+          alias: [],
+          estimated: true
+        };
+      }
+    }
+  }
+  // Ultimate fallback (last rule with empty kw[])
+  var fallback = ESTIMATE_RULES[ESTIMATE_RULES.length - 1];
+  return {
+    n: text,
+    cal: fallback.cal,
+    p: fallback.p,
+    c: fallback.c,
+    f: fallback.f,
+    cat: '估测',
+    alias: [],
+    estimated: true
+  };
+}
+
 // ==================== AI MEAL PARSER ====================
 var QTY_MAP = [
   {kw:['一大碗','1大碗','一大盘'],g:350,cat:[]},
@@ -1292,9 +1397,10 @@ function parseMealDescription(text) {
           if (idx > 0) {
             var foodPart = part.slice(0, idx).trim();
             var matchedFood = fuzzyFindFood(foodPart);
+            if (!matchedFood) matchedFood = estimateUnknownFood(foodPart);
             if (matchedFood) {
               var g = explicitGrams || QTY_MAP[i].g;
-              results.push({food: matchedFood, grams: g, kcal: Math.round(matchedFood.cal * g / 100)});
+              results.push({food: matchedFood, grams: g, kcal: Math.round(matchedFood.cal * g / 100), estimated: !!matchedFood.estimated});
               part = '';
               break;
             }
@@ -1310,6 +1416,7 @@ function parseMealDescription(text) {
     if (!foodPart || foodPart.length < 1) continue;
 
     var bestFood = fuzzyFindFood(foodPart);
+    if (!bestFood) bestFood = estimateUnknownFood(foodPart);
     if (bestFood) {
       var grams = explicitGrams || 100;
       if (!explicitGrams && foundQty) {
@@ -1319,7 +1426,7 @@ function parseMealDescription(text) {
           grams = foundQty.g;
         }
       }
-      results.push({food: bestFood, grams: grams, kcal: Math.round(bestFood.cal * grams / 100)});
+      results.push({food: bestFood, grams: grams, kcal: Math.round(bestFood.cal * grams / 100), estimated: !!bestFood.estimated});
     } else if (foodPart) {
       unmatched.push(foodPart);
     }
@@ -1340,13 +1447,25 @@ function sendMsg() {
   if (chatHistory.length > 20) chatHistory.shift();
   input.value = '';
 
-  // Detect meal description
-  var mealWords = ['吃了','中午','晚上','早上','早餐','午餐','晚餐','午饭','晚饭','早饭','一碗','半碗','一份','一盘','几块','一杯','一根','一个','一些','几个','几口','一点','配','和','还有','加','半根','一小碗'];
+  // Detect meal description - broader matching
+  var mealWords = ['吃了','中午','晚上','早上','早餐','午餐','晚餐','午饭','晚饭','早饭','一碗','半碗','一份','一盘','几块','一杯','一根','一个','一些','几个','几口','一点','半根','一小碗','一大碗','半盘','一盘','几片','一整','半斤','一整份'];
   var looksLikeMeal = false;
   for (var i = 0; i < mealWords.length; i++) {
     if (msg.indexOf(mealWords[i]) >= 0) { looksLikeMeal = true; break; }
   }
-  looksLikeMeal = looksLikeMeal && msg.length > 6;
+  // Also detect: quantity + food name pattern (e.g. "一个苹果", "两块蛋糕")
+  if (!looksLikeMeal) {
+    looksLikeMeal = /(\d+|[一两三四五六七八九十半])\s*(个|碗|盘|份|块|片|杯|根|只|斤|克|g|两|勺)/.test(msg) && msg.length >= 3;
+  }
+  if (!looksLikeMeal) {
+    // Detect food names directly mentioned
+    var foodCount = 0;
+    for (var i = 0; i < FOOD_DB.length && foodCount < 2; i++) {
+      if (msg.indexOf(FOOD_DB[i].n) >= 0 && FOOD_DB[i].n.length >= 2) foodCount++;
+    }
+    looksLikeMeal = foodCount >= 2;
+  }
+  looksLikeMeal = looksLikeMeal && msg.length >= 3;
 
   setTimeout(function() {
     if (looksLikeMeal) {
@@ -1356,9 +1475,14 @@ function sendMsg() {
         for (var r = 0; r < parsed.results.length; r++) { totalKcal += parsed.results[r].kcal; }
         var reply = '🍽️ 我帮你分析了一下这餐：\n\n';
         for (var r = 0; r < parsed.results.length; r++) {
-          reply += '· ' + parsed.results[r].food.n + '，约 ' + parsed.results[r].grams + 'g → <b>' + parsed.results[r].kcal + ' kcal</b>\n';
+          var est = parsed.results[r].estimated ? '~' : '';
+          var estNote = parsed.results[r].estimated ? ' <span style="color:#f0a060;font-size:0.75em;">(估测)</span>' : '';
+          reply += '· ' + parsed.results[r].food.n + '，约 ' + parsed.results[r].grams + 'g → <b>' + est + parsed.results[r].kcal + ' kcal</b>' + estNote + '\n';
         }
         reply += '\n📊 这一餐合计约 <b>' + totalKcal + ' kcal</b>';
+        var hasEstimated = false;
+        for (var r = 0; r < parsed.results.length; r++) { if (parsed.results[r].estimated) hasEstimated = true; }
+        if (hasEstimated) reply += '\n\n⚠️ <span style="color:#f0a060;">标记「估测」的食物不在数据库中，热量是估算的</span>';
         if (parsed.unmatched.length > 0) {
           reply += '\n\n⚠️ 没识别出来：' + parsed.unmatched.join('、') + '——可以去「饮食」tab手动补充哦';
         }
@@ -1415,7 +1539,7 @@ function appendChat(role, text, extra) {
           for (var k = 0; k < itemsData.length; k++) {
             var item = itemsData[k];
             if (!todayMeals[mealId]) todayMeals[mealId] = [];
-            todayMeals[mealId].push({name: item.food.n, grams: item.grams, kcal: item.kcal});
+            todayMeals[mealId].push({name: item.food.n, grams: item.grams, kcal: item.kcal, estimated: !!item.estimated});
           }
           saveToday();
           renderHome();
